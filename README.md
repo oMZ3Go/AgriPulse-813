@@ -365,3 +365,145 @@ bandpasses and timestamps, so their values and risk classes are not directly
 interchangeable. Shared spectral proxies are correlated; another sensor adds
 temporal evidence, not independent ground truth. Ground sensors and validated
 field observations remain future work.
+
+## Stage 4 – Evidence Fusion & Decision Engine
+
+Run from the repository root after generating the real Stage 2 and Stage 3 outputs:
+
+```powershell
+.\.venv\Scripts\python.exe run_fusion.py
+```
+
+Stage 4 runs **entirely offline**, including its first run. It reads the saved
+stress summary, statistics and pixel evidence, plus the Sentinel temporal summary
+and daily time series. No new dependencies, satellite downloads or raw raster/HDF5
+processing are needed. Existing Stage 1–3 outputs are not modified.
+
+| Component | Role in the decision |
+| --- | --- |
+| Tanager | Spatial/spectral prioritization: relative hotspots indicate where to seek verification |
+| Sentinel-2 | Temporal context from observations eligible at the decision cutoff |
+| Ground sensor | Future local verification; current ground evidence is `UNAVAILABLE` |
+| Decision engine | Transparent categorical rules with a human-readable reasoning trace |
+
+**AgriPulse currently supports decisions but does not autonomously irrigate based
+only on satellite evidence.** In Stage 4, `automation_allowed` is **false for every
+rule**, including future scenarios with ground evidence. There is no pump control,
+irrigation-volume prescription, ML confidence, probability gauge or fabricated
+ground measurement.
+
+The default **`decision_as_of` is `2025-06-09T08:35:59.024Z`**, the requested
+Sentinel acquisition nearest the Tanager observation. A daily mosaic is eligible
+only when **every listed source acquisition is at or before this cutoff**. If a
+mosaic straddles the cutoff, it is excluded entirely: aggregate statistics cannot
+safely remove its later pixels. The representative timestamp alone is insufficient.
+The Tanager evidence is also excluded if its acquisition is later than the cutoff.
+
+For the current real data, **19 daily observations** are eligible: **18 strictly
+before** the cutoff and one at the cutoff. **25 later observations are excluded**.
+The engine reuses Stage 3's Theil–Sen function on eligible medians only. Its NDMI
+slope is **+0.002589343 index units/day**, increasing. The stability convention is
+unchanged: absolute fitted change over the eligible span ≤0.02 index units is
+broadly stable; at least three dates are needed. These are descriptive PoC choices,
+not significance tests or drought thresholds.
+
+The baseline is recomputed from eligible observations in the **60 days strictly
+before Tanager**, excluding the compared date. At least five dates and a closest
+observation within seven days of Tanager are required. This gives **17 baseline
+dates**, NDMI baseline median **0.245259**, closest NDMI **0.252172**, and empirical
+baseline percentile **52.94**. NDVI/NDRE are retained as supporting vegetation
+context; they cannot independently select a moisture evidence state.
+
+The temporal classification uses the following exact rules:
+
+| NDMI baseline percentile | Decision-time NDMI trend | Temporal state |
+| --- | --- | --- |
+| <25 | Decreasing | `DECLINE_SUPPORT` |
+| >75 | Increasing | `RECOVERY_OR_WETTER` |
+| Any other sufficient combination, including 25–75 inclusive | Central, stable or conflicting evidence | `NEUTRAL_OR_MIXED` |
+| Baseline or trend unavailable | Insufficient evidence | `INSUFFICIENT` |
+
+These are uncalibrated spectral evidence categories. `RECOVERY_OR_WETTER` does not
+establish measured recovery, and `DECLINE_SUPPORT` does not establish drought.
+The current combination is **`NEUTRAL_OR_MIXED`** because NDMI lies within its broad
+historical range even though the eligible-window slope is increasing.
+
+Stage 2 contributes **`RELATIVE_HOTSPOTS_PRESENT`** from saved High/Very High ranks
+(relative scores ≥50) among **97,490 classified vegetation pixels**. Its score
+median is **45.0131** and maximum **99.6965**. These ranks prioritize verification;
+their percentages are **not calibrated stress prevalence**, and hotspot extent
+does not set decision severity. The categorical interface also represents no
+high-ranked hotspots, no measurable NDMI contrast, and insufficient spectral
+evidence; invalid or incompatible saved Stage 2 files fail validation.
+
+The ordered decision matrix uses the first matching rule:
+
+| Rule | Condition, after preceding rules | Decision |
+| --- | --- | --- |
+| D01 | Either required satellite component insufficient | `INSUFFICIENT_EVIDENCE` |
+| D02 | Relative hotspots + temporal decline support + verified low ground moisture | `ACTION_REVIEW_REQUIRED` |
+| D03 | Other cases with verified low ground moisture | `ELEVATED_CONCERN` |
+| D04 | Verified normal ground moisture conflicts with temporal decline support | `GROUND_VERIFICATION_REQUIRED` |
+| D05 | Other cases with verified normal ground moisture | `MONITOR` |
+| D06 | Relative hotspots + ground unavailable | `GROUND_VERIFICATION_REQUIRED` |
+| D07 | Other temporal decline support + ground unavailable | `GROUND_VERIFICATION_REQUIRED` |
+| D08 | Remaining sufficient combinations | `MONITOR` |
+
+All rules block automation. The real result is **D06:
+`GROUND_VERIFICATION_REQUIRED`**. The recommended next step is to review the
+hotspot map against field boundaries, then obtain quality-checked, site-calibrated
+soil-moisture observations in representative hotspot and comparison areas before
+considering an intervention.
+
+The future ground-observation schema is included in `decision_matrix.json`. It
+describes sensor ID, timestamp, moisture value and unit, location, quality flag,
+calibration reference, interpretation authority and optional measurement depth.
+A future validator must establish temporal/spatial relevance and site/crop/soil
+calibration before supplying `VERIFIED_LOW` or `VERIFIED_NORMAL`. No universal
+soil-moisture threshold is defined. **Stage 4 has no ground-ingestion option**;
+its real output contains `state: UNAVAILABLE` and an empty observations list.
+
+Before fusion, the engine verifies scene IDs, acquisition timestamps, bbox and
+footprint/grid, expected source collection/bands/masks, compatible vegetation
+screens, and consistency of saved statistics. It checks Stage 2's saved masks,
+ranks, score formula and classes against the NPZ evidence, and Stage 3's daily
+source contributions, counts and summary values. SHA-256 hashes identify the
+exact five input files parsed. Incompatible or inconsistent evidence fails loudly.
+Hashes provide change detection, not source authentication.
+
+Full-season statistics are integrity-checked and preserved only under
+`retrospective_context_not_used_for_decision` in the technical summary. They never
+select the June decision. A corrupted input can stop validation; changing valid
+future observations cannot change the decision-time evidence or reasoning trace.
+
+Generated files under `outputs/fusion/` (ignored by Git; replaced on rerun):
+
+| File | Contents |
+| --- | --- |
+| `decision.json` | Decision, cutoff, evidence states, recommended next step, rule trace and limitations |
+| `fusion_summary.json` | Input hashes, detailed methodology, eligibility audit and separate retrospective context |
+| `decision_matrix.json` | Ordered rules, state vocabulary and future ground-observation schema |
+| `evidence_fusion.png` | Real Tanager → Sentinel → unavailable ground evidence → decision chain; automation blocked |
+| `decision_report.md` | Reviewer-readable explanation, actual values, provenance and scientific limits |
+
+Run all tests from the repository root:
+
+```powershell
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+```
+
+Fusion tests use the real saved evidence and in-memory unit scenarios only. They
+check cutoff boundaries, straddling mosaics, future-data invariance, temporal
+conflicts, provenance failures, reasoning/schema correctness and every combination
+in the categorical rule matrix. Offline integration tests block network access and
+raw satellite readers, reproduce all five artifacts byte-for-byte, and verify that
+source files remain unchanged. Synthetic scenarios are never written as production
+evidence.
+
+**Scientific limits:** this is a retrospective reconstruction gated by acquisition
+time, not proof that archived products were operationally available at that time.
+Regional medians do not validate individual hotspots; masks, changing vegetation
+coverage, phenology, harvest and soil/canopy differences can affect both sensors.
+The short baseline is not a climatology, and an increasing overall slope can hide
+recent declines. Neutral/mixed evidence neither confirms nor rules out local stress.
+Ground observations and site-specific validation remain necessary.
