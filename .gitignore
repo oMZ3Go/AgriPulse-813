@@ -16,6 +16,8 @@ outputs/
 *.hdf
 *.tif
 *.tiff
+# Compressed satellite window/evidence arrays, including custom cache locations.
+*.npz
 *.part
 *.tmp
 *.log

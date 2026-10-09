@@ -193,9 +193,10 @@ atmospheric/shadow effects can confound interpretation. The indices share NIR an
 are correlated, so their agreement is not independent confirmation. The
 dependence of index–moisture relationships on land cover and soil is illustrated
 by [Gu et al. (2008)](https://pubs.usgs.gov/publication/70032687).
-**Ground sensors and temporal Sentinel-2 evidence will be used later to increase
-confidence.** They are not implemented here; no ground-truth labels, supervised
-model, time-series pipeline, dashboard, API or IoT component is introduced.
+**Stage 3 below adds temporal Sentinel-2 evidence to help assess this spectral
+proxy; ground sensors remain future work.** Phase 2 itself uses no temporal
+evidence or ground-truth labels and introduces no supervised model, dashboard,
+API or IoT component.
 
 Run the tests after generating the real Phase 1 and Phase 2 outputs:
 
@@ -206,3 +207,161 @@ Run the tests after generating the real Phase 1 and Phase 2 outputs:
 Tests use the actual local Tanager scene, check the Phase 1 refactor, score bounds,
 exclusions, invalid evidence, finite statistics, class percentages, ties,
 configurable screening and reconstruction of scores from saved pixel evidence.
+
+## Stage 3 – Sentinel-2 Temporal Evidence
+
+Install the updated dependencies and run from the repository root after Stage 1:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe run_sentinel.py
+```
+
+**Tanager provides hyperspectral detail at one observation. Sentinel-2 adds more
+frequent temporal monitoring. Together they provide spectral + temporal evidence,
+not ground-truth confirmation of drought.** Stage 3 adds context without changing
+the Stage 2 risk scores or manufacturing labels. No ML, sensors, API, dashboard,
+irrigation logic or disease detection is implemented.
+
+The query follows the Planetary Computer/STAC approach in the official
+`references/00_EO_data_quickstart_notebook.ipynb`: `sentinel-2-l2a`, the **exact bbox
+from the completed Tanager summary**, **2025-04-01 through 2025-07-31 inclusive**,
+and scene cloud cover **<30%**. The analysis clips pixel centers to the actual
+Tanager STAC footprint polygon inside that bbox. The original Tanager snapshot
+checksum is verified; neither reference notebook is modified.
+
+Only native-resolution COG windows intersecting this small area are read. COG
+access transfers intersecting compressed blocks, which can extend slightly beyond
+the requested window; it does not download entire Sentinel tiles. See
+[Rasterio windowed reading](https://rasterio.readthedocs.io/en/latest/topics/windowed-rw.html).
+The Windows cache defaults to **`C:\AgriPulseData\sentinel`**, outside OneDrive.
+Override this separately from `AGRIPULSE_DATA_DIR`:
+
+```powershell
+$env:AGRIPULSE_SENTINEL_DATA_DIR = "D:\AgriPulseData\sentinel"
+.\.venv\Scripts\python.exe run_sentinel.py
+```
+
+On other operating systems the fallback is ignored `data/raw/sentinel/`. The cache
+contains the unsigned STAC snapshot, official calibration XML, compressed raster
+windows and receipts with checksums. Successful windows are reused after an
+interrupted run. Reruns use the saved catalog for reproducibility; pass
+`--refresh-catalog` to query again. The pipeline stops on external access errors;
+it never silently drops a failed download or substitutes artificial imagery.
+
+| Input | Role | STAC center wavelength | Native → analysis spacing |
+| --- | --- | --- | --- |
+| B04 | Red | 665 nm | 10 → 20 m, area average |
+| B05 | Red Edge | 704 nm | 20 → 20 m |
+| B8A | NIR | 865 nm | 20 → 20 m |
+| B11 | SWIR | 1610 nm | 20 → 20 m |
+| SCL | Quality classification | Not a spectral analysis band | 20 → 20 m, nearest |
+
+All inputs share a fixed 20 m UTM grid. Spectral metadata is extracted from each
+real STAC item and preserved per scene; center wavelengths must be within
+400–1700 nm. This compatibility check does not simulate 813's filter responses or
+truncate Sentinel's broad spectral response tails. B04 is read at native 10 m
+before averaging, avoiding uncertain overview resampling. Other bands use nearest
+resampling. Any nodata contribution invalidates the destination cell.
+
+**Calibration matters:** the code reads `BOA_QUANTIFICATION_VALUE` and the
+band-specific `BOA_ADD_OFFSET` from each product's official XML, then computes
+`reflectance = (DN + offset) / quantification`. The inspected 2025 products use
+offset **−1000** and quantification **10000**. Raw DN ratios would therefore be
+incorrect. Nodata DN=0 is excluded before calibration; negative/nonfinite
+reflectances and nonpositive index denominators are excluded, not clipped.
+See the [Copernicus processing description](https://sentiwiki.copernicus.eu/web/s2-processing).
+
+The conservative SCL screen accepts **4 (vegetation) and 5 (not vegetated)** only.
+It excludes **0 nodata, 1 saturated/defective, 2 topographic cast shadow, 3 cloud
+shadow, 6 water, 7 unclassified, 8 medium cloud, 9 high cloud, 10 cirrus and 11
+snow/ice**, plus unknown codes. This is stricter than the required cloud screen;
+SCL is not a validated crop map. See the [SCL class legend](https://custom-scripts.sentinel-hub.com/custom-scripts/sentinel-2/scene-classification/).
+
+For clear land, Stage 3 reuses the Stage 1 normalized-difference formulas:
+
+```text
+NDVI = (B8A − B04) / (B8A + B04)
+NDRE = (B8A − B05) / (B8A + B05)
+NDMI = (B8A − B11) / (B8A + B11)
+```
+
+The vegetation screen is **NDVI ≥ 0.30**, with all three indices finite. This is
+the same **uncalibrated PoC threshold** as Stage 2, not a crop classifier.
+Statistics are the median and spatial P25/P75 over that date's vegetation pixels.
+The shaded P25–P75 interval in figures is spatial spread, **not a confidence
+interval**. Valid counts, vegetation counts, acquisition timestamps and each
+source's scene cloud metadata accompany every observation.
+
+Reprocessed copies of the same platform/tile/acquisition/orbit use the latest
+generation. Multiple tiles or overpasses on the same UTC date form **one daily
+clear-pixel mosaic**: sources are ordered by scene cloud percentage then ID; the
+first valid source supplies all indices together at each pixel. Overlaps count
+once. Pixels are never selected for having the highest NDVI. All source times and
+contribution counts are recorded; there is no composite across different dates.
+
+A date needs at least **20% valid footprint coverage** and **100 vegetation
+pixels**. These configurable PoC coverage safeguards are not stress thresholds;
+excluded dates and reasons remain in `temporal_summary.json`. Coverage can still
+vary considerably, so the combined evidence figure includes clear-land and
+vegetation coverage. Example configuration:
+
+```powershell
+.\.venv\Scripts\python.exe run_sentinel.py --ndvi-threshold 0.35 --min-valid-fraction 0.50
+```
+
+Each index's trend is the **Theil–Sen median of all pairwise slopes** between
+retained daily medians, using actual elapsed calendar days. At least three dates
+are required. A fitted change over the observed span with magnitude ≤ **0.02 index
+units** is called **broadly stable**; otherwise the slope sign gives **increasing**
+or **decreasing**. `--stable-change-tolerance` changes this descriptive PoC
+tolerance. These are not significance tests or water-stress thresholds. A falling
+NDMI trend is described as **temporal moisture-related decline evidence**, with
+its causes unconfirmed.
+
+If at least five usable dates occur in the **60 days strictly before Tanager**,
+and the nearest retained Sentinel acquisition is within **7 days**, a baseline
+comparison is included. Each date receives equal weight. For each index it reports
+the baseline median and unscaled MAD, the nearest date's median, their difference,
+the difference in MAD units (undefined if MAD=0), and a tie-aware empirical
+percentile `100 × (count below + 0.5 × count equal) / N`. The compared date is
+excluded from the baseline. A percentile is a rank, **not a drought probability**.
+
+Generated files under `outputs/sentinel/` (ignored by Git; replaced on rerun):
+
+| File | Contents |
+| --- | --- |
+| `sentinel_timeseries.json` | Chronological daily statistics, source times/clouds, calibration and window provenance |
+| `sentinel_timeseries.csv` | Same dates, counts, cloud metadata, medians and P25/P75 in tabular form |
+| `ndvi_timeseries.png` | NDVI median and spatial IQR, with Tanager date marked |
+| `ndre_timeseries.png` | NDRE median and spatial IQR, with Tanager date marked |
+| `ndmi_timeseries.png` | NDMI median and spatial IQR, with Tanager date marked |
+| `temporal_evidence.png` | All three indices plus changing observation coverage |
+| `temporal_summary.json` | Footprint/grid, filters, retained/excluded dates, closest acquisition, trends, baseline and limitations |
+
+Semicolon-separated source IDs, acquisition times and cloud percentages in the
+CSV follow the same source order. JSON preserves a full provenance record per
+source, including the number of pixels it actually contributed.
+
+Run the automated tests after the real Stages 1–3 outputs exist:
+
+```powershell
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+```
+
+Stage 3 tests run offline against real cached windows: finite bounded indices,
+calibration, masks, overlap handling, chronological dates, required summary fields,
+CSV/JSON agreement and reconstruction of every retained daily statistic. Small
+deterministic vectors test slope logic only; they are never used as satellite data.
+
+**Scientific limits:** varying clouds, footprint coverage and daily vegetation
+screens change the sampled population; this is not a fixed cohort of crop fields.
+Harvest, phenology, canopy density, soil background, crop mixtures, irrigation and
+residual atmospheric effects can all change the indices. Masking is imperfect,
+and screening can remove the very vegetation that is declining. The short recent
+baseline is not a multi-year climatology. The April–July trend cannot by itself
+describe conditions on June 8. Tanager and Sentinel have different resolutions,
+bandpasses and timestamps, so their values and risk classes are not directly
+interchangeable. Shared spectral proxies are correlated; another sensor adds
+temporal evidence, not independent ground truth. Ground sensors and validated
+field observations remain future work.
