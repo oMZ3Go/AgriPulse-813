@@ -302,6 +302,15 @@ def normalized_difference(first: np.ndarray, second: np.ndarray, valid: np.ndarr
     return result
 
 
+def compute_indices(reflectance: dict[str, np.ndarray], valid: np.ndarray) -> dict[str, np.ndarray]:
+    """Return reusable masked indices, using the same formulas in both phases."""
+    # Red Edge supports interpretation of canopy chlorophyll/greenness differences.
+    # SWIR water absorption gives NDMI moisture sensitivity, not a drought diagnosis.
+    return {"NDVI": normalized_difference(reflectance["nir"], reflectance["red"], valid),
+            "NDRE": normalized_difference(reflectance["nir"], reflectance["red_edge"], valid),
+            "NDMI": normalized_difference(reflectance["nir"], reflectance["swir"], valid)}
+
+
 def summarize(values: np.ndarray) -> dict:
     finite = values[np.isfinite(values)]
     if finite.size == 0:
@@ -387,11 +396,7 @@ def run_pipeline(scene_id: str) -> None:
         reflectance, valid, quality = load_reflectance(source_path, wavelengths, selected, spectral)
         last_success = "read official quality masks and four real reflectance bands"
         stage = "compute masked indices and valid-pixel statistics"
-        # Red Edge responds to canopy chlorophyll changes; it is useful beyond NDVI greenness.
-        # SWIR is sensitive to vegetation water absorption, giving NDMI moisture sensitivity.
-        indices = {"NDVI": normalized_difference(reflectance["nir"], reflectance["red"], valid),
-                   "NDRE": normalized_difference(reflectance["nir"], reflectance["red_edge"], valid),
-                   "NDMI": normalized_difference(reflectance["nir"], reflectance["swir"], valid)}
+        indices = compute_indices(reflectance, valid)
         statistics = {name: summarize(arr) for name, arr in indices.items()}
         summary = {
             "scene_id": scene_id, "acquisition_date": properties["datetime"], "bbox": item["bbox"],
