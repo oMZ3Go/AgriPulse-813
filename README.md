@@ -507,3 +507,80 @@ coverage, phenology, harvest and soil/canopy differences can affect both sensors
 The short baseline is not a climatology, and an increasing overall slope can hide
 recent declines. Neutral/mixed evidence neither confirms nor rules out local stress.
 Ground observations and site-specific validation remain necessary.
+
+## Stage 4.5 – Why Hyperspectral?
+
+The current PoC uses simple indices as an explainable baseline. Stage 4.5 uses
+the **existing real Tanager scene `20250608_091605_90_4001`** to visualize the
+additional spectral information retained around and between those index
+wavelengths. Run offline after Stages 1 and 2:
+
+```powershell
+.\.venv\Scripts\python.exe run_spectral.py
+```
+
+This reuses the verified local HDF5, exact STAC wavelengths, official quality
+mask and saved Stage 2 vegetation/risk evidence. No new dependencies or downloads
+are needed. Existing stage outputs remain unchanged. The **400–1700 nm
+compatibility window does not simulate Satellite 813 spectral response functions**.
+The four-point baseline also uses Tanager bands, without multispectral bandpass
+convolution.
+
+| Available information | Real-scene result |
+| --- | --- |
+| Compact baseline | Red **665.87**, Red Edge **705.92**, NIR **861.26**, SWIR **1647.66 nm**, yielding NDVI/NDRE/NDMI |
+| Full in-window profile | **260** narrow-band centers, **401.29–1697.65 nm**; **250** have usable statistics in both groups |
+| Lower relative-risk group | **24,373** pixels: score ≤ population P25 (**21.2423**) AND Stage 2 Low (score <25) |
+| Higher relative-risk group | **21,203** pixels: score ≥ population P75 (**71.4741**) AND Stage 2 Very High (score ≥75) |
+
+Both groups contain only quality-valid, Stage 2 classified vegetation from the
+**97,490-pixel** reference population (existing NDVI ≥0.30 screen). All members
+of these fixed quartile/class intersections are used, including boundary ties;
+there is no random subsampling or manual choice of striking pixels. Scores are
+used only for sampling. Counts differ because the original class labels are
+preserved. Per-band median/P25/P75 use finite, nonnegative, non-nodata reflectance;
+valid/excluded counts are saved for every band. **Ten bands at 1362.44–1407.51 nm
+have no usable values**: they remain explicit JSON `null` values and plot gaps,
+without imputation. Small exclusions elsewhere can change the per-band population.
+P25–P75 describes spatial spread, not a confidence interval.
+
+The descriptive difference is **higher minus lower group median reflectance**.
+Exploratory narrow-band contrast regions are selected from fixed 25 nm windows
+by mean absolute difference, excluding centers within ±15 nm of the four index
+bands and the Stage 1 atmospheric caution interval **1350–1450 nm**. Windows need
+at least three bands, all with statistics in both groups; up to three windows
+are shown, with centers at least 100 nm apart. These rules are fixed, not tuned.
+All eligible window scores are saved. The selected windows are **1450–1475**,
+**1550–1575**, and **1675–1700 nm**, with mean absolute differences **0.1871**,
+**0.1778**, and **0.1684** reflectance units. These are correlated display contrasts,
+not biomarkers or drought bands; the first borders the atmospheric caution region.
+
+Generated files in `outputs/spectral/` (ignored by Git; replaced on rerun):
+
+| File | Contents |
+| --- | --- |
+| `group_spectral_signatures.png` | Both group medians with shaded P25–P75 |
+| `spectral_difference.png` | Signed median difference and exploratory contrast windows |
+| `hyperspectral_value.png` | Four-point baseline versus the full spectral profile, on the same scale |
+| `spectral_summary.json` | Source hashes, masks/population, group definitions/counts/membership hashes, per-band statistics, ranking rules/results, limitations and attribution |
+
+**Confounding:** Stage 2 risk uses the same NDVI/NDRE/NDMI bands, so group
+differences near those wavelengths are partly expected by construction. Separation
+elsewhere is also correlated spectral evidence and **does not independently
+validate water stress**. Crop type, phenology, canopy/soil mixtures and residual
+atmospheric effects remain plausible explanations. No crop matching or ground
+truth establishes the cause; the 260 bands are not 260 independent measurements.
+
+**This is an exploratory information-content demonstration, not proof that
+hyperspectral data improves drought-detection accuracy.** Indices provide a compact
+interpretable baseline. Hyperspectral data preserves fine spectral structure that
+can support future calibrated crop-specific models when ground truth becomes
+available. Data attribution: Planet Labs PBC, **CC-BY-4.0**; reference notebooks by
+Dr. Vincent Markiet / Space42.
+
+Run all stages' tests with `.\.venv\Scripts\python.exe -m unittest discover -s tests -v`.
+Stage 4.5 tests check real masks, deterministic nonoverlapping groups, wavelength
+ordering/range, invalid-value exclusions, percentile ordering, source consistency,
+fixed contrast rules, byte-for-byte offline artifact reproduction and unchanged
+upstream outputs. Stage 4.5 adds no ML, disease classification, Sentinel processing,
+IoT, dashboard or Stage 5 implementation.
