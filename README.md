@@ -585,6 +585,114 @@ fixed contrast rules, byte-for-byte offline artifact reproduction and unchanged
 upstream outputs. Stage 4.5 adds no ML, disease classification, Sentinel processing,
 IoT, dashboard or Stage 5 implementation.
 
+## Stage 4.6 – Experimental Unsupervised Spectral Anomaly ML
+
+**The anomaly layer identifies vegetation spectra that are unusual relative to
+the current scene. It is not a drought, disease, or crop-stress classifier.**
+Independent field ground truth is currently insufficient for defensible supervised
+learning. Stage 2 risk classes and index-derived labels are therefore never used
+as training targets, validation labels, sampling strata or tuning criteria.
+
+Install the added lightweight Python dependencies once, then run from the repository
+root with the existing Stage 1 and Stage 2 artifacts and local Tanager data:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe run_ml.py
+```
+
+The pipeline itself runs **entirely offline**, reusing `AGRIPULSE_DATA_DIR`
+(Windows default `C:\AgriPulseData\tanager`) and scene `20250608_091605_90_4001`.
+Missing files, mismatched scenes/lineage, altered HDF5/STAC checksums or inconsistent
+eligibility masks fail loudly. No data downloads or substitute scenes are attempted.
+Previous scientific outputs and the frontend are not modified.
+
+The fixed pipeline is **StandardScaler → PCA → Isolation Forest**:
+
+1. Reconstruct and verify Stage 2's quality-valid NDVI ≥0.30 vegetation screen,
+   including finite NDVI/NDRE/NDMI eligibility, without computing or reading risk
+   scores/classes for fitting. This starts with **97,490** candidate pixels.
+2. Audit all **260** bands inside **400–1700 nm**. Conservatively exclude the
+   entire **1350–1450 nm** atmospheric caution interval already identified in
+   Stages 1/4.5: **20 bands**, including the **ten wholly unusable bands at
+   1362.44–1407.51 nm**. Any additional empty or constant bands would also be
+   explicitly excluded. **240 bands** remain. This is a compatibility window,
+   **not a Satellite 813 spectral response simulation**.
+3. Require finite, nonnegative, non-nodata reflectance in every retained band.
+   This excludes **136** incomplete spectra, leaving **97,354 eligible pixels**.
+   No interpolation, gap filling, smoothing, invalid-value replacement or clipping
+   occurs. Reflectances above one are retained and counted in the band audit.
+4. Sample **20,000** eligible pixels uniformly without replacement using
+   NumPy `Generator(PCG64(813))`; sort the selected pixel indices. Fit the scaler
+   using per-band sample means and population standard deviations (`ddof=0`).
+5. Fit PCA with `n_components=0.99`, `svd_solver="full"`, `whiten=False`,
+   `copy=True`, `random_state=813`. The smallest component count exceeding 99%
+   of standardized fitting-sample variance is **5**, retaining **99.260896%**.
+6. Fit Isolation Forest on those five components with **200 trees**,
+   `max_samples=256`, `max_features=1.0`, `contamination="auto"`,
+   `bootstrap=False`, `random_state=813`, `n_jobs=1`, `warm_start=False`,
+   `verbose=0`. Score **all eligible pixels** in batches of 8,192; fitting and
+   transforms use one BLAS/OpenMP thread.
+
+The continuous anomaly score is **`-IsolationForest.score_samples(...)`**:
+higher means more spectrally unusual. The observed range is **0.372270–0.718427**.
+The library's automatic decision offset is unused; no binary anomaly labels,
+assumed anomaly fraction, display threshold or calibrated probability is produced.
+See the official [Isolation Forest score definition](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.IsolationForest.html)
+and [PCA variance rule](https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html).
+
+After fitting, a descriptive comparison on the same 97,354 pixels gives
+**Spearman ρ = +0.003357** with the Stage 2 relative moisture-risk score. The JSON
+also reports anomaly distributions by the existing Stage 2 risk classes. No
+comparison metric chooses features, components, model settings or thresholds.
+Agreement does not prove moisture stress; disagreement does not prove either
+method wrong. Both originate from the same scene, so this is **not independent
+validation**. Near-zero rank correlation also does not establish independence.
+
+Generated files in `outputs/ml/` (ignored by Git; replaced on rerun):
+
+| File | Contents |
+| --- | --- |
+| `anomaly_score.png` | Continuous relative spectral anomaly; unassessed pixels gray |
+| `anomaly_context.png` | NDVI, Stage 2 proxy and anomaly on identical eligible pixels; descriptive only |
+| `pca_summary.png` | Individual and cumulative retained variance, sample size and fixed selection rule |
+| `ml_summary.json` | Input hashes, eligibility, every band's audit/exclusion reasons, model configuration, sample/membership hashes, variance, score statistics, comparison and limitations |
+| `anomaly_pixel_evidence.npz` | Lossless float64 scores, eligibility mask, scene ID, fitting pixel indices and retained band indices; about 0.69 MiB |
+
+Load the NPZ with `allow_pickle=False`; scores are NaN outside eligibility, on
+the original image grid. This compact evidence is saved for future integration;
+Stage 5B is not implemented. Measured pipeline runs took **7.34–8.12 seconds**
+on the development machine (excluding Python imports); a separate offline run
+peaked at **469.68 MiB process working set** on Windows. The retained float32
+spectra occupy **89.13 MiB**; one float64 fitting matrix occupies **36.62 MiB**.
+These are array sizes, not peak process memory. Band-block reads, sample fitting
+and batched scoring avoid loading the full hyperspectral cube into memory.
+
+Run `.\.venv\Scripts\python.exe -m unittest discover -s tests -v`.
+Stage 4.6 tests check exclusions, finite PCA/scores, variance ordering, score
+orientation, fixed seeds, missing inputs, lineage and source checksums. A real-data
+regression replaces all Stage 2 risk scores/classes and obtains identical fitting
+membership, PCA components and anomaly scores. Two fresh runs block network access,
+reproduce all five artifacts byte-for-byte and verify unchanged upstream outputs
+and frontend files. Exact numerical/PNG identity across different library versions,
+hardware or fonts is not guaranteed; dependencies and versions are recorded.
+
+**Scientific limits:** results are scene-relative, unsupervised, exploratory,
+not field-calibrated, not a probability or diagnosis, and not proof of agronomic
+damage. Crop type, canopy structure/density, phenology, soil/background, mixed
+pixels and residual atmosphere can drive unusual spectra. Quality/vegetation
+screens can omit sparse or affected vegetation. Uniform pixel sampling represents
+area rather than balanced fields, and spatially adjacent pixels are not independent
+replicates. Standardization can emphasize noise; PCA may discard unusual
+low-variance directions. Components have no assigned physical drought meaning.
+There is no classification accuracy, F1, precision, recall or ROC-AUC claim.
+
+Future supervised learning requires **independent ground-truth labels** from farmer
+observations, agronomist verification and calibrated IoT measurements. EO spectral
+features, temporal features, weather, field observations and calibrated IoT may
+then support locally calibrated Random Forest or XGBoost models. These inputs and
+supervised models remain future work; none is implemented in Stage 4.6.
+
 ## Stage 5A – Modern UI Shell
 
 The independent Next.js frontend in [`dashboard/`](dashboard/README.md) introduces
