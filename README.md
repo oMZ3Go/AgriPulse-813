@@ -584,3 +584,26 @@ ordering/range, invalid-value exclusions, percentile ordering, source consistenc
 fixed contrast rules, byte-for-byte offline artifact reproduction and unchanged
 upstream outputs. Stage 4.5 adds no ML, disease classification, Sentinel processing,
 IoT, dashboard or Stage 5 implementation.
+
+## Stage 5A – Modern UI Shell
+
+The independent Next.js frontend in [`dashboard/`](dashboard/README.md) introduces
+the **AgriPulse-813** identity by **Beyond The Limit**, an interactive Earth globe,
+Konya scene selection, and Farmer / Expert workspace shells. **All analysis areas
+are clearly labeled placeholders**; no Stage 1–4.5 output is read by the UI.
+Konya, Turkey is the current validated demo scene. Syria and the Arab region are
+the target deployment context, with no validated regional analysis in this demo.
+
+From the repository root (Node.js 20.9 or newer):
+
+```powershell
+Set-Location .\dashboard
+npm.cmd ci
+npm.cmd run dev
+```
+
+Open **http://127.0.0.1:3000**. On macOS/Linux, use `npm` instead of `npm.cmd`.
+The frontend uses Next.js, TypeScript, Tailwind CSS, Framer Motion, and
+react-globe.gl. Production run instructions are in the [frontend README](dashboard/README.md).
+Real scientific-output integration and evidence visualizations are deferred to
+Stage 5B. Stage 5A adds no API, authentication, database, IoT, ML, or irrigation controls.
