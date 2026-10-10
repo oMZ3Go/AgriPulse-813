@@ -1,0 +1,91 @@
+{
+  "analysis_level": "EO_ENHANCED",
+  "aoi": {
+    "aoi_id": "konya-20250608_091605_90_4001",
+    "country": "Turkey",
+    "crs": "EPSG:4326",
+    "geometry": {
+      "east": 32.70580618046614,
+      "north": 37.69491765950834,
+      "south": 37.51375341016496,
+      "type": "BoundingBox",
+      "west": 32.44227196464563
+    },
+    "place_name": "Konya",
+    "requested_time_range": {
+      "end": "2025-07-31T23:59:59.999999Z",
+      "start": "2025-04-01T00:00:00Z"
+    }
+  },
+  "automation_allowed": false,
+  "data_availability": {
+    "ground": "UNAVAILABLE",
+    "hyperspectral": "AVAILABLE",
+    "iot": "NOT_CONNECTED",
+    "ml": "AVAILABLE",
+    "sentinel": "AVAILABLE",
+    "temporal": "AVAILABLE",
+    "weather": "NOT_CHECKED"
+  },
+  "decision_as_of": "2025-06-09T08:35:59.024000Z",
+  "decision_reference": "outputs/fusion/decision.json#/matched_rule_id=D06",
+  "decision_state": "GROUND_VERIFICATION_REQUIRED",
+  "evidence": [
+    {
+      "provenance": [
+        "outputs/sentinel/temporal_summary.json"
+      ],
+      "source": "sentinel",
+      "summary": "Sentinel-2 screening available for the demo AOI."
+    },
+    {
+      "provenance": [
+        "outputs/fusion/decision.json#/spectral_evidence",
+        "outputs/spectral/spectral_summary.json"
+      ],
+      "source": "hyperspectral",
+      "summary": "RELATIVE_HOTSPOTS_PRESENT; scene-relative spectral priorities for field verification."
+    },
+    {
+      "provenance": [
+        "outputs/fusion/decision.json#/temporal_evidence"
+      ],
+      "source": "temporal",
+      "summary": "NEUTRAL_OR_MIXED; neither confirms nor rules out local stress."
+    },
+    {
+      "diagnosis_allowed": false,
+      "is_independent_ground_truth": false,
+      "kind": "EXPERIMENTAL_UNSUPERVISED_SPECTRAL_ANOMALY",
+      "limitation": "Experimental spectral anomaly evidence is complementary only; not drought or disease detection, probability, calibrated agronomic prediction or ground truth.",
+      "meaning": "Spectrally unusual vegetation relative to the current scene.",
+      "provenance": [
+        "outputs/ml/ml_summary.json"
+      ],
+      "scene_id": "20250608_091605_90_4001",
+      "score_is_probability": false,
+      "source": "ml",
+      "used_for_decision": false
+    }
+  ],
+  "ground_observations": [],
+  "iot_evidence": [],
+  "iot_max_age_seconds": 86400,
+  "limitations": [
+    "Evidence levels describe available capability, not accuracy, confidence, probability or guarantees; more sources do not automatically improve accuracy.",
+    "Analyse agricultural areas using Earth-observation data available for that location; coverage and usable quality differ by place and time.",
+    "Decision support only. No autonomous intervention is allowed in this PoC; no decision state establishes a diagnosis.",
+    "Experimental spectral anomaly evidence is complementary only; not drought or disease detection, probability, calibrated agronomic prediction or ground truth.",
+    "Ground observations are unavailable; no ground measurements have been simulated.",
+    "Stage 4 uses only acquisitions at or before the decision cutoff; later observations in the requested season do not select this decision.",
+    "This is an acquisition-time-gated retrospective reconstruction, not proof of operational availability in June 2025.",
+    "Relative hotspots are not drought prevalence; regional temporal medians do not validate individual hotspots.",
+    "Masks, phenology, crop/canopy and soil differences, mixed pixels and residual atmosphere can confound shared spectral proxies.",
+    "The short seasonal baseline is not a climatology; neutral or mixed temporal evidence does not exclude local stress.",
+    "The 400-1700 nm window does not simulate Satellite 813 response; correlated evidence is not independent ground truth."
+  ],
+  "presentation_mode": "EXPERT",
+  "recommended_next_action": "Review the hotspot map against field boundaries; obtain quality-checked, site-calibrated soil-moisture observations in representative hotspot and comparison areas before considering an intervention.",
+  "schema_version": "4.7.1",
+  "use_case": "EXPLORE_EARTH"
+}

@@ -693,6 +693,127 @@ features, temporal features, weather, field observations and calibrated IoT may
 then support locally calibrated Random Forest or XGBoost models. These inputs and
 supervised models remain future work; none is implemented in Stage 4.6.
 
+## Stage 4.7 – Scientific Product & Evidence Contract
+
+[`product_contract.py`](src/agripulse/product_contract.py) defines the typed,
+validated boundary for future product integration. It uses standard-library frozen
+dataclasses and string enums, adds no dependencies, and performs no I/O or scientific
+analysis. [`product_contract_konya.json`](examples/product_contract_konya.json) is a
+deterministic example of the contract, not a newly generated scientific result.
+
+Three independent use cases describe user intent, without promising equal data
+availability or upgrading evidence merely because a mode was selected:
+
+| Use case | Purpose |
+| --- | --- |
+| `EXPLORE_EARTH` | Preliminary EO screening of a selected agricultural region using the data available there |
+| `VERIFY_MY_FIELD` | Combine satellite screening with a human observation from someone able to access the field |
+| `SMART_FARM` | Combine EO with site-specific IoT measurements and future continuous monitoring |
+
+Presentation is independent: every use case supports **`SIMPLE`** and **`EXPERT`**.
+`permitted_content()` and `validate_content_categories()` define the category
+allowlist. `presentation_content()` provides a SIMPLE projection containing status,
+evidence level, inspection recommendation, next action and concise limitations.
+It omits raw metrics and evidence payloads. EXPERT permits NDVI/NDRE/NDMI, spectral
+and temporal evidence, hyperspectral detail, PCA/anomaly evidence, quality masks,
+provenance, evidence fusion, reasoning trace and full limitations. No UI is added.
+Full `to_dict()` / `to_json()` serialization is the scientific transport, including
+evidence even when the requested presentation is SIMPLE; it is not a rendering
+allowlist. Future presenters must use the content contract, not display the entire
+transport by default. Producer-authored next actions must use concise plain language.
+
+| Analysis level | Capability represented |
+| --- | --- |
+| `PRELIMINARY_EO` | Usable Sentinel-2 screening only |
+| `EO_ENHANCED` | Screening plus usable temporal history, hyperspectral, weather or experimental ML evidence |
+| `GROUND_INFORMED` | EO plus a relevant human field observation |
+| `SITE_MONITORED` | EO plus usable site-specific IoT, optionally with human observations |
+
+These are **evidence-richness labels, not accuracy ranks, confidence scores,
+probabilities or guarantees**. More sources do not automatically improve scientific
+accuracy. The deterministic resolver uses site monitoring, then human observation,
+then enriched EO, then preliminary EO as capability precedence; all evidence remains
+in the result. Version 1 conservatively requires usable Sentinel-2 as its satellite
+foundation. Without it, `analysis_level` is JSON `null` and only `INSUFFICIENT_DATA`
+is permitted, even when other sources exist. Supporting other satellite foundations
+requires a later explicit contract revision.
+
+Availability is explicit for `sentinel`, `temporal`, `hyperspectral`, `weather`,
+`ground`, `iot` and `ml`: `AVAILABLE`, `UNAVAILABLE`, `NOT_CHECKED`, `NOT_CONNECTED`,
+`AVAILABLE_BUT_UNCALIBRATED`, or `INSUFFICIENT_QUALITY`. `AVAILABLE` asserts usable
+evidence for the AOI and time, not merely file existence. Available sources require
+an evidence summary and provenance; ground/IoT additionally require typed records.
+Other states never promote capability. Upstream validation must still establish EO
+coverage/quality and provenance: this contract does not authenticate artifacts.
+
+**Global input:** `AreaOfInterest` includes an identifier, WGS84 geometry, optional
+place/country and required inclusive UTC time range. Point, bounding box and simple
+closed polygon are supported with finite coordinate/range validation. Coordinates
+use named longitude/latitude; this is a typed geometry schema, not a GeoJSON parser.
+Polygons with holes, multipolygons and antimeridian wrapping are deferred; split
+crossing areas before use. Point AOIs have no implicit buffer. This represents
+“Analyse agricultural areas using Earth-observation data available for that location,”
+without a global coverage promise or any downloading implementation.
+
+**Human ground evidence:** observations include ID, point location, timezone-aware
+timestamp, crop, observer role (farmer/researcher/agronomist), plant/soil condition,
+recent irrigation and optional irrigation time, symptoms, notes and photo reference.
+They are explicitly `HUMAN_OBSERVATION`, default to `SELF_REPORTED`, and may record
+`EXPERT_VERIFIED` or `SENSOR_SUPPORTED` with a verification reference. All retain
+`is_independent_ground_truth: false`. Review or farmer reporting alone does not
+establish independent scientific ground truth. Records must lie in the AOI, within
+the requested time range and at or before the decision cutoff.
+
+**IoT evidence:** records include sensor ID/location/time, volumetric soil moisture
+(`m3/m3`), air temperature (`degC`), relative humidity (`percent`), and optional soil
+temperature, EC (`dS/m`), pH and leaf wetness (`percent`). Sensor states distinguish
+`CONNECTED`, `CALIBRATED`, `UNCALIBRATED`, `STALE` and `INVALID`. Calibration metadata
+includes state, calibration and site-context references, and a validity interval.
+Only calibrated, quality-valid, relevant, current measurements can support
+`SITE_MONITORED`; a connection or uncalibrated reading cannot. Freshness uses an
+explicit decision cutoff and configurable `iot_max_age_seconds` (default 86,400),
+never the wall clock. This is an illustrative contract policy, not a validated
+sampling interval or agronomic moisture threshold. Structural validity/calibration
+does not guarantee sensor correctness, coverage or field representativeness.
+
+**ML and decisions:** Stage 4.6 is represented only as
+`EXPERIMENTAL_UNSUPERVISED_SPECTRAL_ANOMALY`, meaning “Spectrally unusual vegetation
+relative to the current scene.” Fixed flags reject diagnosis, probability, ground
+truth and decision-use claims. It is not drought/disease detection or a calibrated
+agronomic prediction. The contract validates a supplied decision and its provenance;
+it does not introduce another scientific decision engine. The product vocabulary is
+`NO_CLEAR_CONCERN`, `MONITOR`, `REVIEW_RECOMMENDED`, `GROUND_VERIFICATION_REQUIRED`,
+and `INSUFFICIENT_DATA`; none is a diagnosis. Every result includes evidence,
+limitations, a next action and immutable **`automation_allowed: false`**.
+
+The Konya snapshot (`20250608_091605_90_4001`) remains **`EO_ENHANCED`** with relative
+spectral hotspots, neutral/mixed temporal evidence, unavailable ground evidence,
+unconnected IoT, unchecked weather and available experimental ML. Its Stage 4 D06
+decision remains **`GROUND_VERIFICATION_REQUIRED`** at
+`2025-06-09T08:35:59.024Z`, with automation disabled, whether ML is included or not.
+The requested April–July season does not extend the decision's acquisition cutoff.
+This retrospective demo is not evidence of an operational decision made in 2025.
+
+Future supervised learning requires independently validated ground-truth labels
+from verified field/agronomist observations and calibrated IoT, matched to EO,
+temporal and weather features with a suitable validation protocol. Neither labels
+nor supervised ML, ingestion, weather APIs, downloads, backend or Stage 5B are
+implemented here. Stages 1–4.6 and Stage 5A remain unchanged.
+
+Run contract tests alone, or the complete scientific regression suite:
+
+```powershell
+.\.venv\Scripts\python.exe -m unittest discover -s tests -p test_product_contract.py -v
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+```
+
+Contract tests exercise invalid inputs, calibration/freshness/spatial relevance,
+all 128 usable/unusable source combinations across the permitted decisions and
+all use cases/modes (2,304 result scenarios), ML decision invariance, deterministic
+serialization, presentation rules, the real Konya artifacts and unchanged prior
+outputs/frontend. Existing real local artifacts are required for integration tests;
+missing data is never downloaded or replaced with synthetic production evidence.
+
 ## Stage 5A – Modern UI Shell
 
 The independent Next.js frontend in [`dashboard/`](dashboard/README.md) introduces
