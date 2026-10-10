@@ -1,0 +1,140 @@
+{
+  "figures": {
+    "fusion": [
+      {
+        "caption": "Saved acquisition-time-gated reconstruction; not proof of a live operational decision in June 2025.",
+        "height": 2210,
+        "sha256": "ea774d0c8fde3595e224ca62340296b165e7e336d4ab2d2d9b6c196df412813c",
+        "source": "outputs/fusion/evidence_fusion.png",
+        "src": "/data/konya/figures/evidence_fusion.png",
+        "title": "Stage 4 evidence fusion",
+        "width": 2040
+      }
+    ],
+    "ml": [
+      {
+        "caption": "Continuous scene-relative score; not a probability or a diagnostic threshold.",
+        "height": 1600,
+        "sha256": "e979af060a82f22e8f03ec77d6fb5df821912261d4d05d1f6ee89472269840a1",
+        "source": "outputs/ml/anomaly_score.png",
+        "src": "/data/konya/figures/anomaly_score.png",
+        "title": "Experimental spectral anomaly score",
+        "width": 1760
+      },
+      {
+        "caption": "The layers answer different questions. Their relationship is descriptive, not independent validation.",
+        "height": 1280,
+        "sha256": "1c27599f826604c8c0236d6b8693c37e64f46d01c4e9131577b38abf1aed5961",
+        "source": "outputs/ml/anomaly_context.png",
+        "src": "/data/konya/figures/anomaly_context.png",
+        "title": "Anomaly and Stage 2 context",
+        "width": 2880
+      },
+      {
+        "caption": "Retained sample variance is not accuracy or physical importance.",
+        "height": 1120,
+        "sha256": "221873024e2cd0bb3b6a0b0eda8efb1e1f9aa3f935af1804697b755cddf2a241",
+        "source": "outputs/ml/pca_summary.png",
+        "src": "/data/konya/figures/pca_summary.png",
+        "title": "PCA summary",
+        "width": 2080
+      }
+    ],
+    "spatial": [
+      {
+        "caption": "Relative vegetation ranks; gray pixels are unassessed. Image-pixel axes, not field boundaries or a geographic overlay.",
+        "height": 1350,
+        "sha256": "a375f1c6dfe18762cdf11f5a87ee63e608ca1554e19dff7ffce219264fff15ba",
+        "source": "outputs/stress/moisture_stress_risk.png",
+        "src": "/data/konya/figures/moisture_stress_risk.png",
+        "title": "Scene-relative moisture-risk score",
+        "width": 1500
+      },
+      {
+        "caption": "Class extent is not drought prevalence or calibrated severity.",
+        "height": 1350,
+        "sha256": "b979769e230cf793af2719c823b52a6f2231e86eda4ea2bae02ff55145114d57",
+        "source": "outputs/stress/moisture_stress_classes.png",
+        "src": "/data/konya/figures/moisture_stress_classes.png",
+        "title": "Relative risk classes",
+        "width": 1500
+      },
+      {
+        "caption": "Shared spectral proxies on the same classified vegetation population; not independent validation.",
+        "height": 1950,
+        "sha256": "6d8c8e1e6e3d684d2ea4e5d83f343907bc8efcc99ad1bb7ae1fe08f5d8b836d0",
+        "source": "outputs/stress/expert_evidence.png",
+        "src": "/data/konya/figures/expert_evidence.png",
+        "title": "NDVI, NDRE, NDMI and risk",
+        "width": 2250
+      }
+    ],
+    "spectral": [
+      {
+        "caption": "More spectral detail does not establish improved prediction accuracy.",
+        "height": 1530,
+        "sha256": "698801c0fc55bb80b03116a221460c7037e9a6dd6aa9551f6a137186028a3763",
+        "source": "outputs/spectral/hyperspectral_value.png",
+        "src": "/data/konya/figures/hyperspectral_value.png",
+        "title": "Hyperspectral information context",
+        "width": 2380
+      },
+      {
+        "caption": "Groups were selected using Stage 2 risk. Their separation is not independent confirmation of moisture stress.",
+        "height": 1190,
+        "sha256": "461fe113b9c4e32e1501d8c79853232fe7b917bffa72538f6c2c9ae785867aca",
+        "source": "outputs/spectral/group_spectral_signatures.png",
+        "src": "/data/konya/figures/group_spectral_signatures.png",
+        "title": "Group spectral signatures",
+        "width": 2040
+      }
+    ],
+    "temporal": [
+      {
+        "caption": "April–July 2025 retrospective context: 44 observations. Dates after the decision cutoff do not select the Stage 4 decision. Shading shows spatial P25–P75, not confidence intervals.",
+        "height": 2040,
+        "sha256": "e7fcce855c2dba98cf32497d62fc162c4885c6ee1ba5052f8843da3e572fba87",
+        "source": "outputs/sentinel/temporal_evidence.png",
+        "src": "/data/konya/figures/temporal_evidence.png",
+        "title": "Full-season temporal context",
+        "width": 2040
+      }
+    ]
+  },
+  "files": {
+    "contract": {
+      "path": "contract.json",
+      "sha256": "7c1c00a446f263b5054a8ef9ef79d6d9f4e08bb90010862507924f5d1018a172"
+    },
+    "fusion": {
+      "path": "fusion.json",
+      "sha256": "9f683057f09dec78c7cc79a7be53b9eb1db851dd8bba537aeabed714e719c5ee"
+    },
+    "ml": {
+      "path": "ml.json",
+      "sha256": "fc6d80dcf752120d9c51bbf6d9464a7f9d8140e9910d9128bf7c4968845fae30"
+    },
+    "provenance": {
+      "path": "provenance.json",
+      "sha256": "d1211891e073ae132f4621f35487f99f265ca3b262386573414908ef5ccaf9b5"
+    },
+    "simple": {
+      "path": "simple.json",
+      "sha256": "c2a46d3fae50b4ff44e061d551f5ab0d2a86db4f3fd13e97579955076db3986e"
+    },
+    "spatial": {
+      "path": "spatial.json",
+      "sha256": "0d0ba1187f2710d56aaa27da4e9451ae182cb63e8ea59f6552331ce9a58fef4d"
+    },
+    "spectral": {
+      "path": "spectral.json",
+      "sha256": "84f492364e1b56d6b5ecbee08c78fc01bddf2c161259472c6457652663aa691f"
+    },
+    "temporal": {
+      "path": "temporal.json",
+      "sha256": "6094cd4d10d3a35656c12565169aaf141808106a54b375d40ab914381364ab02"
+    }
+  },
+  "scene_id": "20250608_091605_90_4001",
+  "schema_version": "5B.1"
+}

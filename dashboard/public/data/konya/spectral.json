@@ -1,0 +1,43 @@
+{
+  "bands_with_statistics_in_both_groups": 250,
+  "group_definitions": {
+    "higher": "quality-valid AND Stage 2 classified vegetation AND score >= population P75 AND score >= 75 (Very High)",
+    "lower": "quality-valid AND Stage 2 classified vegetation AND score <= population P25 AND score < 25 (Low)",
+    "note": "Class intersections preserve the exact Stage 2 labels; counts need not be equal or exactly 25%. Scores are used only for sampling.",
+    "quantile_method": "numpy linear; include all boundary ties; no random sampling or manual pixel selection",
+    "reference_population_pixels": 97490,
+    "score_quantiles": {
+      "p25": 21.242314897022247,
+      "p75": 71.47414449158124
+    }
+  },
+  "information_comparison": {
+    "compact_baseline": "Four Tanager narrow-band reflectances: Red, Red Edge, NIR, SWIR; NDVI, NDRE and NDMI are derived from these same four, not three extra independent measurements.",
+    "conclusion": "Indices provide a compact interpretable baseline. Hyperspectral data preserves fine spectral structure that can support future calibrated crop-specific models when ground truth becomes available.",
+    "independent_band_count_claimed": false,
+    "prediction_accuracy_evaluated": false,
+    "profile": "260 in-window band centers; 250 with group statistics in both groups. Richer spectral sampling around and between the baseline wavelengths; missing bands are gaps.",
+    "satellite_813_response_simulated": false
+  },
+  "limitations": [
+    "Stage 2 risk uses NDVI/NDRE/NDMI from the same cube. Differences near their Red, Red Edge, NIR and SWIR wavelengths are partly expected by construction. Contrasts elsewhere are also correlated spectral evidence, not independent validation of water stress.",
+    "Exploratory information-content demonstration, not proof that hyperspectral data improves drought-detection accuracy. No ground truth, accuracy benchmark, significance test or causal validation is available.",
+    "The 400-1700 nm compatibility window does NOT simulate Satellite 813 spectral response functions or spatial resolution. The four-point baseline uses Tanager narrow bands, not convolved multispectral sensor bands.",
+    "Risk groups are scene-relative sampling priorities, not healthy/drought labels or calibrated stress severity. Group definitions and contrast display rules are fixed, not tuned to maximize separation.",
+    "Crop type, phenology, canopy density, soil, mixed pixels, shadows and remaining atmospheric effects can explain group contrasts. No field/crop matching or independent replicates are established.",
+    "The existing NDVI vegetation screen and beta quality masks are imperfect and may omit sparse or affected vegetation; the selected tails do not represent all vegetation.",
+    "Missing, nonfinite, negative and STAC-nodata reflectances are excluded per band without imputation or clipping. Per-band populations can differ; empty bands have null statistics and gaps in figures. Reflectance above one is retained and counted, not silently clipped.",
+    "The 1350-1450 nm atmospheric water-vapor region flagged in Stage 1 remains visible with a caution but is excluded from contrast-region ranking. Finite values elsewhere are not a guarantee of reliable atmospheric correction.",
+    "P25-P75 describes within-group spatial spread, not a confidence interval. The difference of medians is descriptive; spectra are not smoothed, normalized or treated as independent tests.",
+    "Exploratory narrow-band contrast regions are ranked display windows, not biomarkers or drought bands. Nearby/correlated wavelengths do not provide 260 independent pieces of evidence."
+  ],
+  "methodology": {
+    "confounding": "Stage 2 risk uses NDVI/NDRE/NDMI from the same cube. Differences near their Red, Red Edge, NIR and SWIR wavelengths are partly expected by construction. Contrasts elsewhere are also correlated spectral evidence, not independent validation of water stress.",
+    "difference": "Higher relative-risk group median minus lower relative-risk group median, in surface-reflectance units, only where both medians exist.",
+    "group_sampling": "All fixed quartile/class intersection members; no random subsampling, manual representatives, class balancing or spectral separation fitting. Quantiles precede per-band exclusions.",
+    "reflectance": "Physical surface-reflectance floats; no scaling, smoothing, normalization, clipping or imputation. Reuse Stage 1 finite/nonnegative/STAC-nodata convention for each band.",
+    "source_verification": "Reuse Stage 2 offline Stage 1 loader: HDF5 size/SHA-256, STAC SHA-256, wavelength selection and official quality masks. Validate saved Stage 2 masks/indices/scores/classes against the unchanged implementation; use saved scores only to select groups.",
+    "statistics": "Per-band linear P25/P50/P75 from usable group members only. Null when no usable members; valid/excluded/above-one counts accompany every band. P25-P75 is spatial spread, not uncertainty of the median."
+  },
+  "number_of_bands_in_range": 260
+}

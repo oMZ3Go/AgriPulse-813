@@ -1,0 +1,80 @@
+{
+  "attribution": "Planet Labs PBC, CC-BY-4.0. Sentinel-2: Copernicus / ESA via Microsoft Planetary Computer. Reference notebooks: Dr. Vincent Markiet / Space42.",
+  "lineage": {
+    "note": "Upstream hashes retained as reported; Stage 4 does not rehash raw assets or the external catalog.",
+    "phase1_summary_sha256": "4ec2f3091c615b28da5e4357377c70108e7cbbc910d0ce531789145a56ed5a48",
+    "sentinel_catalog_sha256": "0715a4fe7ed5224021ddd079199f794f08df818ccd77a163d676d9dcf2c68db6",
+    "source_hdf5_sha256": "f3115eb5eb3fe5355326e81a4041e08f060887f1d4264ed810df19f4de08e53a"
+  },
+  "scene": {
+    "acquisition_date": "2025-06-08T09:16:05.903891Z",
+    "bbox": [
+      32.44227196464563,
+      37.51375341016496,
+      32.70580618046614,
+      37.69491765950834
+    ],
+    "data_attribution": "Planet Labs PBC",
+    "exact_selected_wavelengths": {
+      "nir": 861.26,
+      "red": 665.87,
+      "red_edge": 705.92,
+      "swir": 1647.6599999999999
+    },
+    "ground_sample_distance_m": 32.72,
+    "license": "CC-BY-4.0",
+    "projection": "EPSG:32636",
+    "scene_id": "20250608_091605_90_4001",
+    "spatial_resolution_m": [
+      30.0
+    ],
+    "valid_pixel_definition": "nodata_pixels == 0 AND beta_cloud_mask == 0 AND beta_cirrus_mask == 0"
+  },
+  "sources": [
+    {
+      "bytes": 4130,
+      "path": "examples/product_contract_konya.json",
+      "sha256": "7c1c00a446f263b5054a8ef9ef79d6d9f4e08bb90010862507924f5d1018a172"
+    },
+    {
+      "bytes": 3134,
+      "path": "outputs/tanager/scene_summary.json",
+      "sha256": "4ec2f3091c615b28da5e4357377c70108e7cbbc910d0ce531789145a56ed5a48"
+    },
+    {
+      "bytes": 5526,
+      "path": "outputs/stress/stress_summary.json",
+      "sha256": "3903ab859e8304d6664d77432299221ce155c0ed1eb91c9733806d2e001b8809"
+    },
+    {
+      "bytes": 3012,
+      "path": "outputs/stress/stress_statistics.json",
+      "sha256": "3bf2f4c019ebdeabd0e61e71e337bea72796f5dec0697945faa6daa1f5d09282"
+    },
+    {
+      "bytes": 17463,
+      "path": "outputs/sentinel/temporal_summary.json",
+      "sha256": "4c627d80c11b8899c9fc5e496d24bbd748d918be677c379a8bda74cb4bbcd07d"
+    },
+    {
+      "bytes": 10734,
+      "path": "outputs/fusion/decision.json",
+      "sha256": "32d5523fc41bd0a4e8612732f35280c82a40ae111d23cabd22b431424583d1ff"
+    },
+    {
+      "bytes": 20037,
+      "path": "outputs/fusion/fusion_summary.json",
+      "sha256": "5902043c9b2e90c944e96c0682436ed8486c3439a6c15c21bae00419525ab343"
+    },
+    {
+      "bytes": 176111,
+      "path": "outputs/spectral/spectral_summary.json",
+      "sha256": "5fd20637a98997c2382e2025a95c32272e00e464bb8b8b30684027e97ddaecab"
+    },
+    {
+      "bytes": 90033,
+      "path": "outputs/ml/ml_summary.json",
+      "sha256": "8b95bb1978cb713f6846a02c0c3659e10e99d4672a7f33865f1b1a6f95291ea1"
+    }
+  ]
+}

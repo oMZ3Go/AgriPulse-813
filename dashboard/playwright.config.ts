@@ -17,9 +17,9 @@ export default defineConfig({
     screenshot: "only-on-failure",
   },
   webServer: {
-    command: "npm run dev",
+    command: `node node_modules/next/dist/bin/next ${process.env.PLAYWRIGHT_PRODUCTION ? "start" : "dev"} --hostname 127.0.0.1`,
     url: "http://127.0.0.1:3000",
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: !process.env.CI && !process.env.PLAYWRIGHT_PRODUCTION,
     timeout: 120000,
   },
 });

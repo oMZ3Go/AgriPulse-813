@@ -3,9 +3,9 @@
 import dynamic from "next/dynamic";
 import { Component, useEffect, useState } from "react";
 import { Globe2 } from "lucide-react";
-import type { SceneId } from "@/lib/scenes";
+import type { Country } from "@/lib/scenes";
 
-export type EarthGlobeProps = { selected: SceneId | null; onSelect: (scene: SceneId) => void };
+export type EarthGlobeProps = { selected: Country | null; onSelect: (country: Country) => void };
 
 const GlobeCanvas = dynamic(() => import("./globe-canvas"), {
   ssr: false,
@@ -13,7 +13,7 @@ const GlobeCanvas = dynamic(() => import("./globe-canvas"), {
 });
 
 function GlobePlaceholder({ unavailable = false }: { unavailable?: boolean }) {
-  return <div className="globe-placeholder" role="status"><div className="globe-outline"><Globe2 size={64} strokeWidth={0.6} /></div><p>{unavailable ? "Earth view unavailable on this device" : "Preparing the Earth view"}</p><span>{unavailable ? "Use the region controls to continue." : "Regional context · Konya and Syria"}</span></div>;
+  return <div className="globe-placeholder" role="status"><div className="globe-outline"><Globe2 size={64} strokeWidth={0.6} /></div><p>{unavailable ? "Earth view unavailable on this device" : "Preparing the Earth view"}</p><span>{unavailable ? "Use country search to continue." : "Local geography · no external map service"}</span></div>;
 }
 
 class GlobeBoundary extends Component<{ children: React.ReactNode }, { failed: boolean }> {

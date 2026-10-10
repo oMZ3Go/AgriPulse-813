@@ -1,0 +1,230 @@
+{
+  "automation_allowed": false,
+  "bbox": [
+    32.44227196464563,
+    37.51375341016496,
+    32.70580618046614,
+    37.69491765950834
+  ],
+  "decision": "GROUND_VERIFICATION_REQUIRED",
+  "decision_as_of": "2025-06-09T08:35:59.024Z",
+  "engine_version": "fusion-poc-v1",
+  "ground_evidence": {
+    "observations": [],
+    "reason": "No real ground measurements are available; none have been simulated or inferred from satellite indices.",
+    "state": "UNAVAILABLE"
+  },
+  "limitations": [
+    "Decision support only: no confirmed water stress/drought, calibrated probability, ML confidence, irrigation prescription or automatic actuation.",
+    "Stage 2 ranks are relative within one scene. Hotspot counts/percentages are not drought prevalence or calibrated severity.",
+    "NDMI is a moisture-related spectral proxy; phenology, harvest, soil, canopy structure and residual atmosphere can also change it. NDVI/NDRE are supporting context only.",
+    "No ground observations exist in this decision. Future low/normal ground states require site/crop/soil/depth calibration, quality checks, temporal validity and spatial relevance.",
+    "This is an acquisition-time-gated retrospective reconstruction. Historical publication, processing and operational availability of these archived products are not established; no claim of a live decision made in June 2025.",
+    "A same-day mosaic straddling the cutoff is excluded in full; aggregate statistics cannot safely remove its later pixels without reprocessing raw products.",
+    "Clear coverage and vegetation populations vary by date. The regional Sentinel median does not validate individual Tanager hotspots or track a fixed crop cohort.",
+    "The 60-day baseline is a short seasonal reference, not a climatology. Percentile categories and the 0.02 trend stability tolerance are uncalibrated PoC choices, not significance tests or drought thresholds.",
+    "The whole eligible-window slope can hide recent dips; neutral/mixed evidence neither confirms nor rules out local or short-term stress.",
+    "Tanager and Sentinel differ in resolution, spectral response and acquisition time. Their shared spectral proxies are correlated; fusion does not create independent ground truth.",
+    "Source spectral centers remain inside 400-1700 nm. This is not an Arab Satellite 813 response simulation.",
+    "File hashes provide reproducibility and change detection, not source authenticity or verification of all upstream processing. Stage 4 validates saved evidence without reopening raw satellite assets."
+  ],
+  "matched_rule_id": "D06",
+  "reasoning_trace": [
+    {
+      "explanation": "Relative hyperspectral hotspots are available within 97,490 classified vegetation pixels. Their extent is not drought prevalence.",
+      "rule_id": "SPECTRAL_RELATIVE_HOTSPOTS_PRESENT"
+    },
+    {
+      "explanation": "Closest eligible Sentinel NDMI is 0.2522, at percentile 52.94 of 17 prior daily medians: BROAD_HISTORICAL_RANGE. This rank is not a probability.",
+      "rule_id": "TEMPORAL_BASELINE_BROAD_HISTORICAL_RANGE"
+    },
+    {
+      "explanation": "Using 19 eligible daily observations, the historical NDMI slope is +0.002589 index units/day (increasing). Observations after the cutoff are not used.",
+      "rule_id": "TEMPORAL_TREND"
+    },
+    {
+      "explanation": "NDMI baseline position and trend do not jointly support a directional state; central, stable or conflicting evidence remains neutral/mixed.",
+      "rule_id": "TEMPORAL_NEUTRAL_OR_MIXED"
+    },
+    {
+      "explanation": "No real ground measurements are available; none have been simulated or inferred from satellite indices.",
+      "rule_id": "GROUND_UNAVAILABLE"
+    },
+    {
+      "explanation": "Relative hyperspectral hotspots offer sampling priorities, but ground verification is unavailable. Result: GROUND_VERIFICATION_REQUIRED.",
+      "rule_id": "D06"
+    },
+    {
+      "explanation": "Stage 4 permits decision support and human review only. Automatic irrigation and pump activation are blocked in every rule.",
+      "rule_id": "AUTOMATION_DISABLED"
+    }
+  ],
+  "recommended_next_step": "Review the hotspot map against field boundaries; obtain quality-checked, site-calibrated soil-moisture observations in representative hotspot and comparison areas before considering an intervention.",
+  "schema_version": 1,
+  "source_scene_id": "20250608_091605_90_4001",
+  "spectral_evidence": {
+    "acquisition_datetime": "2025-06-08T09:16:05.903891Z",
+    "classified_vegetation_pixels": 97490,
+    "interpretation": "Saved High/Very High relative ranks (score >= 50) prioritize ground sampling; their extent is NOT drought prevalence or calibrated severity.",
+    "methodology": "Scene-relative spectral moisture-stress risk, PoC v1",
+    "ndmi_spatial_range": 0.954729704450034,
+    "relative_hotspots_present": true,
+    "relative_score_maximum": 99.69650620144034,
+    "relative_score_median": 45.01310312791996,
+    "score_is_probability": false,
+    "source_scene_id": "20250608_091605_90_4001",
+    "state": "RELATIVE_HOTSPOTS_PRESENT",
+    "vegetation_threshold": 0.3
+  },
+  "temporal_evidence": {
+    "baseline": {
+      "available": true,
+      "dates": [
+        "2025-04-12",
+        "2025-04-15",
+        "2025-04-17",
+        "2025-04-20",
+        "2025-04-22",
+        "2025-04-24",
+        "2025-04-27",
+        "2025-05-04",
+        "2025-05-05",
+        "2025-05-07",
+        "2025-05-17",
+        "2025-05-20",
+        "2025-05-22",
+        "2025-05-25",
+        "2025-05-27",
+        "2025-06-04",
+        "2025-06-06"
+      ],
+      "indices": {
+        "NDMI": {
+          "baseline_mad": 0.04652805906341853,
+          "baseline_median": 0.24525916561314792,
+          "mad_distance_defined": true,
+          "target_distance_in_unscaled_mad": 0.14856305374887388,
+          "target_empirical_percentile": 52.94117647058823,
+          "target_median": 0.25217151615261735,
+          "target_minus_baseline": 0.006912350539469425
+        },
+        "NDRE": {
+          "baseline_mad": 0.037463767137271564,
+          "baseline_median": 0.4081787201817494,
+          "mad_distance_defined": true,
+          "target_distance_in_unscaled_mad": -0.45581329409685833,
+          "target_empirical_percentile": 23.529411764705884,
+          "target_median": 0.391102237073632,
+          "target_minus_baseline": -0.01707648310811738
+        },
+        "NDVI": {
+          "baseline_mad": 0.03488465589263212,
+          "baseline_median": 0.5853433714889623,
+          "mad_distance_defined": true,
+          "target_distance_in_unscaled_mad": -0.5787475059918007,
+          "target_empirical_percentile": 23.529411764705884,
+          "target_median": 0.5651539638937193,
+          "target_minus_baseline": -0.020189407595243014
+        }
+      },
+      "lookback_days": 60,
+      "maximum_target_gap_days": 7.0,
+      "method": "Equal-weight daily vegetation medians; baseline median, unscaled MAD, target-minus-baseline and tie-aware empirical percentile. Excludes target date; no probability.",
+      "minimum_dates": 5,
+      "observation_count": 17,
+      "target_date": "2025-06-09",
+      "window_end_exclusive": "2025-06-08T09:16:05.903891Z",
+      "window_start": "2025-04-09T09:16:05.903891+00:00"
+    },
+    "category_reason": "NDMI baseline position and trend do not jointly support a directional state; central, stable or conflicting evidence remains neutral/mixed.",
+    "closest_observation": {
+      "absolute_gap_days": 0.9721425938541666,
+      "acquisition_datetime": "2025-06-09T08:35:59.024000Z",
+      "daily_vegetation_statistics": {
+        "NDMI": {
+          "max": 0.7285694111001272,
+          "median": 0.25217151615261735,
+          "min": -0.37691367367134293,
+          "p25": 0.1064376399172871,
+          "p75": 0.4499400800306091
+        },
+        "NDRE": {
+          "max": 0.8880976602238045,
+          "median": 0.391102237073632,
+          "min": 0.025076990761108715,
+          "p25": 0.25987297605722637,
+          "p75": 0.6049723178663972
+        },
+        "NDVI": {
+          "max": 0.9974449057809006,
+          "median": 0.5651539638937193,
+          "min": 0.3,
+          "p25": 0.3835232898205754,
+          "p75": 0.7977655973015791
+        }
+      },
+      "date": "2025-06-09",
+      "source_scene_id": "S2B_MSIL2A_20250609T083559_R064_T36SVG_20250609T105639"
+    },
+    "cutoff_rule": "All listed source acquisitions of a daily mosaic must be <= decision_as_of; straddling mosaics excluded in full.",
+    "dates_used": [
+      "2025-04-07",
+      "2025-04-12",
+      "2025-04-15",
+      "2025-04-17",
+      "2025-04-20",
+      "2025-04-22",
+      "2025-04-24",
+      "2025-04-27",
+      "2025-05-04",
+      "2025-05-05",
+      "2025-05-07",
+      "2025-05-17",
+      "2025-05-20",
+      "2025-05-22",
+      "2025-05-25",
+      "2025-05-27",
+      "2025-06-04",
+      "2025-06-06",
+      "2025-06-09"
+    ],
+    "decision_time_trends": {
+      "NDMI": {
+        "direction": "increasing",
+        "fitted_change_over_span": 0.16312857874673942,
+        "method": "Theil-Sen median of pairwise slopes over elapsed days",
+        "observation_count": 19,
+        "slope_per_30_days": 0.07768027559368544,
+        "slope_per_day": 0.0025893425197895145,
+        "span_days": 63.0,
+        "stable_total_change_tolerance": 0.02
+      },
+      "NDRE": {
+        "direction": "increasing",
+        "fitted_change_over_span": 0.10755245103549455,
+        "method": "Theil-Sen median of pairwise slopes over elapsed days",
+        "observation_count": 19,
+        "slope_per_30_days": 0.051215452874045025,
+        "slope_per_day": 0.0017071817624681675,
+        "span_days": 63.0,
+        "stable_total_change_tolerance": 0.02
+      },
+      "NDVI": {
+        "direction": "increasing",
+        "fitted_change_over_span": 0.11105933747800714,
+        "method": "Theil-Sen median of pairwise slopes over elapsed days",
+        "observation_count": 19,
+        "slope_per_30_days": 0.05288539879905102,
+        "slope_per_day": 0.001762846626635034,
+        "span_days": 63.0,
+        "stable_total_change_tolerance": 0.02
+      }
+    },
+    "historical_observations_used": 19,
+    "ndmi_baseline_percentile": 52.94117647058823,
+    "ndmi_baseline_position": "BROAD_HISTORICAL_RANGE",
+    "observations_strictly_before_cutoff": 18,
+    "state": "NEUTRAL_OR_MIXED",
+    "supporting_context": "NDVI/NDRE trends and baseline comparisons describe vegetation condition only; they do not select the moisture state."
+  }
+}

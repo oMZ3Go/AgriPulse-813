@@ -1,0 +1,178 @@
+{
+  "anomaly_score_definition": "-IsolationForest.score_samples(PCA(StandardScaler(reflectance))); higher means more spectrally unusual relative to this scene's eligible vegetation. Raw continuous score, not a probability; no predict/decision threshold is used.",
+  "anomaly_statistics": {
+    "count": 97354,
+    "interquartile_range": 0.05873769791513389,
+    "max": 0.7184269677894314,
+    "mean": 0.44660831497070763,
+    "median": 0.43262154622664656,
+    "median_absolute_deviation": 0.02620792238604791,
+    "min": 0.37226966267973244,
+    "percentiles": {
+      "p05": 0.3912432083492754,
+      "p10": 0.3975378533775965,
+      "p25": 0.4108455584961802,
+      "p50": 0.43262154622664656,
+      "p75": 0.4695832564113141,
+      "p90": 0.5171018960908573,
+      "p95": 0.5503934959217008
+    },
+    "standard_deviation": 0.049667859150141734
+  },
+  "calibrated_agronomic_classifier": false,
+  "descriptive_stage2_comparison": {
+    "anomaly_by_stage2_relative_risk_class": {
+      "High": {
+        "anomaly_statistics": {
+          "count": 22818,
+          "interquartile_range": 0.04883548531269932,
+          "max": 0.7184269677894314,
+          "mean": 0.43865121588145206,
+          "median": 0.4271731027976835,
+          "median_absolute_deviation": 0.022491940781660974,
+          "min": 0.37226966267973244,
+          "percentiles": {
+            "p05": 0.3897030689121496,
+            "p10": 0.39559544809228975,
+            "p25": 0.40816849402175137,
+            "p50": 0.4271731027976835,
+            "p75": 0.4570039793344507,
+            "p90": 0.4963831221153794,
+            "p95": 0.5259214269625154
+          },
+          "standard_deviation": 0.04439136788114482
+        },
+        "count": 22818
+      },
+      "Low": {
+        "anomaly_statistics": {
+          "count": 28391,
+          "interquartile_range": 0.07232278112098223,
+          "max": 0.6521050483720692,
+          "mean": 0.4560917343074579,
+          "median": 0.4382357073238067,
+          "median_absolute_deviation": 0.03004627607578847,
+          "min": 0.380884377666319,
+          "percentiles": {
+            "p05": 0.3947361387188293,
+            "p10": 0.4006989476429272,
+            "p25": 0.41367898362057465,
+            "p50": 0.4382357073238067,
+            "p75": 0.4860017647415569,
+            "p90": 0.5446521964903147,
+            "p95": 0.5704032588352346
+          },
+          "standard_deviation": 0.055250798672453784
+        },
+        "count": 28391
+      },
+      "Moderate": {
+        "anomaly_statistics": {
+          "count": 24954,
+          "interquartile_range": 0.05800354400206975,
+          "max": 0.6854255316805881,
+          "mean": 0.43552278712088616,
+          "median": 0.42403483952489074,
+          "median_absolute_deviation": 0.025829962366290926,
+          "min": 0.3735838891337168,
+          "percentiles": {
+            "p05": 0.3861816925839389,
+            "p10": 0.39060460134874014,
+            "p25": 0.40247559551546475,
+            "p50": 0.42403483952489074,
+            "p75": 0.4604791395175345,
+            "p90": 0.49719927948104176,
+            "p95": 0.5202614640252203
+          },
+          "standard_deviation": 0.043072697493220624
+        },
+        "count": 24954
+      },
+      "Very High": {
+        "anomaly_statistics": {
+          "count": 21191,
+          "interquartile_range": 0.05720688916012484,
+          "max": 0.7150842372979808,
+          "mean": 0.4555248168155196,
+          "median": 0.44065956046945964,
+          "median_absolute_deviation": 0.0251285061281587,
+          "min": 0.3811419168099493,
+          "percentiles": {
+            "p05": 0.403076459907978,
+            "p10": 0.4086445987422741,
+            "p25": 0.4199492847210452,
+            "p50": 0.44065956046945964,
+            "p75": 0.47715617388117004,
+            "p90": 0.5227441486759901,
+            "p95": 0.5575398120618231
+          },
+          "standard_deviation": 0.05023839745024302
+        },
+        "count": 21191
+      }
+    },
+    "interpretation": "Agreement with Stage 2 does not prove moisture stress; disagreement does not prove either method wrong. Both originate from the same scene, so comparison is not independent validation.",
+    "method": "Pearson correlation of average-tie ranks on the same ML-eligible pixels; no p-value or inferential claim. Null if either score is constant.",
+    "population_count": 97354,
+    "spearman_rank_correlation": 0.003356908411859871,
+    "used_for_training_feature_selection_or_tuning": false
+  },
+  "eligible_vegetation_pixel_count": 97354,
+  "excluded_band_count": 20,
+  "fitting_sample_size": 20000,
+  "isolation_forest": {
+    "auto_offset_used_for_scoring": false,
+    "bootstrap": false,
+    "contamination": "auto",
+    "contamination_note": "auto supplies a library offset only; raw score_samples ignores it. No predict, decision_function, anomaly labels or anomaly-prevalence estimate.",
+    "effective_max_samples": 256,
+    "max_features": 1.0,
+    "max_samples": 256,
+    "n_estimators": 200,
+    "n_jobs": 1,
+    "random_state": 813,
+    "verbose": 0,
+    "warm_start": false
+  },
+  "pca": {
+    "copy": true,
+    "cumulative_explained_variance": 0.9926089632546151,
+    "cumulative_explained_variance_ratio": [
+      0.5499989400202016,
+      0.9384635092345874,
+      0.9781550917422515,
+      0.9875982240602608,
+      0.9926089632546151
+    ],
+    "explained_variance_ratio": [
+      0.5499989400202016,
+      0.3884645692143858,
+      0.03969158250766402,
+      0.00944313231800934,
+      0.0050107391943544
+    ],
+    "interpretation": "Variance of standardized sample spectra, not physical drought indicators or accuracy.",
+    "n_components_parameter": 0.99,
+    "random_state": 813,
+    "retained_component_count": 5,
+    "rule": "Smallest component count with cumulative standardized fitting-sample variance strictly greater than 0.99 (sklearn full SVD rule). No risk-dependent selection.",
+    "svd_solver": "full",
+    "whiten": false
+  },
+  "scientific_limitations": [
+    "Scene-relative, unsupervised, exploratory and not field-calibrated. This is not a calibrated agronomic classifier.",
+    "The anomaly layer identifies vegetation spectra that are unusual relative to the current scene. It is not a drought, disease, or crop-stress classifier, a diagnosis, or proof of moisture stress or agronomic damage.",
+    "Scores are not probabilities or prevalence estimates and are not directly comparable across scenes or fitted models. No binary anomaly threshold or known anomaly fraction is asserted.",
+    "Independent ground truth is insufficient for defensible supervised learning. No fabricated labels, classification accuracy, F1, precision, recall or ROC-AUC are used.",
+    "Agreement with Stage 2 does not prove moisture stress; disagreement does not prove either method wrong. Both originate from the same scene, so comparison is not independent validation.",
+    "Crop type, canopy structure/density, phenology, soil/background, mixed pixels, shadows and residual atmospheric effects can explain spectral differences.",
+    "The NDVI screen and beta quality masks are imperfect; sparse, senescent or severely affected vegetation may be omitted. Pixels missing any retained band remain unassessed, not assigned a low score.",
+    "Uniform pixel sampling represents area, not balanced fields/crops or independent field replicates; rare vegetation types may be underrepresented. Fit-sample scores are descriptive in-sample scores, not held-out evaluation.",
+    "Standardization can emphasize noisy low-variance bands. PCA retains sample variance, not physical importance, and discarded low-variance directions may contain unusual spectra. PCs are not physical drought indicators.",
+    "The 1350-1450 nm atmospheric caution region is excluded in full. Other finite reflectances may still contain atmospheric artifacts; values above one are retained and counted, not clipped.",
+    "400-1700 nm is a compatibility window only, not a Satellite 813 spectral response or spatial-resolution simulation. No missing bands are interpolated, imputed or smoothed."
+  ],
+  "score_is_probability": false,
+  "stage_name": "Experimental Unsupervised Spectral Anomaly ML",
+  "usable_band_count": 240
+}

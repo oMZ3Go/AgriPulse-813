@@ -1,0 +1,238 @@
+{
+  "decision_time": {
+    "baseline": {
+      "available": true,
+      "dates": [
+        "2025-04-12",
+        "2025-04-15",
+        "2025-04-17",
+        "2025-04-20",
+        "2025-04-22",
+        "2025-04-24",
+        "2025-04-27",
+        "2025-05-04",
+        "2025-05-05",
+        "2025-05-07",
+        "2025-05-17",
+        "2025-05-20",
+        "2025-05-22",
+        "2025-05-25",
+        "2025-05-27",
+        "2025-06-04",
+        "2025-06-06"
+      ],
+      "indices": {
+        "NDMI": {
+          "baseline_mad": 0.04652805906341853,
+          "baseline_median": 0.24525916561314792,
+          "mad_distance_defined": true,
+          "target_distance_in_unscaled_mad": 0.14856305374887388,
+          "target_empirical_percentile": 52.94117647058823,
+          "target_median": 0.25217151615261735,
+          "target_minus_baseline": 0.006912350539469425
+        },
+        "NDRE": {
+          "baseline_mad": 0.037463767137271564,
+          "baseline_median": 0.4081787201817494,
+          "mad_distance_defined": true,
+          "target_distance_in_unscaled_mad": -0.45581329409685833,
+          "target_empirical_percentile": 23.529411764705884,
+          "target_median": 0.391102237073632,
+          "target_minus_baseline": -0.01707648310811738
+        },
+        "NDVI": {
+          "baseline_mad": 0.03488465589263212,
+          "baseline_median": 0.5853433714889623,
+          "mad_distance_defined": true,
+          "target_distance_in_unscaled_mad": -0.5787475059918007,
+          "target_empirical_percentile": 23.529411764705884,
+          "target_median": 0.5651539638937193,
+          "target_minus_baseline": -0.020189407595243014
+        }
+      },
+      "lookback_days": 60,
+      "maximum_target_gap_days": 7.0,
+      "method": "Equal-weight daily vegetation medians; baseline median, unscaled MAD, target-minus-baseline and tie-aware empirical percentile. Excludes target date; no probability.",
+      "minimum_dates": 5,
+      "observation_count": 17,
+      "target_date": "2025-06-09",
+      "window_end_exclusive": "2025-06-08T09:16:05.903891Z",
+      "window_start": "2025-04-09T09:16:05.903891+00:00"
+    },
+    "category_reason": "NDMI baseline position and trend do not jointly support a directional state; central, stable or conflicting evidence remains neutral/mixed.",
+    "closest_observation": {
+      "absolute_gap_days": 0.9721425938541666,
+      "acquisition_datetime": "2025-06-09T08:35:59.024000Z",
+      "daily_vegetation_statistics": {
+        "NDMI": {
+          "max": 0.7285694111001272,
+          "median": 0.25217151615261735,
+          "min": -0.37691367367134293,
+          "p25": 0.1064376399172871,
+          "p75": 0.4499400800306091
+        },
+        "NDRE": {
+          "max": 0.8880976602238045,
+          "median": 0.391102237073632,
+          "min": 0.025076990761108715,
+          "p25": 0.25987297605722637,
+          "p75": 0.6049723178663972
+        },
+        "NDVI": {
+          "max": 0.9974449057809006,
+          "median": 0.5651539638937193,
+          "min": 0.3,
+          "p25": 0.3835232898205754,
+          "p75": 0.7977655973015791
+        }
+      },
+      "date": "2025-06-09",
+      "source_scene_id": "S2B_MSIL2A_20250609T083559_R064_T36SVG_20250609T105639"
+    },
+    "cutoff_rule": "All listed source acquisitions of a daily mosaic must be <= decision_as_of; straddling mosaics excluded in full.",
+    "dates_used": [
+      "2025-04-07",
+      "2025-04-12",
+      "2025-04-15",
+      "2025-04-17",
+      "2025-04-20",
+      "2025-04-22",
+      "2025-04-24",
+      "2025-04-27",
+      "2025-05-04",
+      "2025-05-05",
+      "2025-05-07",
+      "2025-05-17",
+      "2025-05-20",
+      "2025-05-22",
+      "2025-05-25",
+      "2025-05-27",
+      "2025-06-04",
+      "2025-06-06",
+      "2025-06-09"
+    ],
+    "decision_time_trends": {
+      "NDMI": {
+        "direction": "increasing",
+        "fitted_change_over_span": 0.16312857874673942,
+        "method": "Theil-Sen median of pairwise slopes over elapsed days",
+        "observation_count": 19,
+        "slope_per_30_days": 0.07768027559368544,
+        "slope_per_day": 0.0025893425197895145,
+        "span_days": 63.0,
+        "stable_total_change_tolerance": 0.02
+      },
+      "NDRE": {
+        "direction": "increasing",
+        "fitted_change_over_span": 0.10755245103549455,
+        "method": "Theil-Sen median of pairwise slopes over elapsed days",
+        "observation_count": 19,
+        "slope_per_30_days": 0.051215452874045025,
+        "slope_per_day": 0.0017071817624681675,
+        "span_days": 63.0,
+        "stable_total_change_tolerance": 0.02
+      },
+      "NDVI": {
+        "direction": "increasing",
+        "fitted_change_over_span": 0.11105933747800714,
+        "method": "Theil-Sen median of pairwise slopes over elapsed days",
+        "observation_count": 19,
+        "slope_per_30_days": 0.05288539879905102,
+        "slope_per_day": 0.001762846626635034,
+        "span_days": 63.0,
+        "stable_total_change_tolerance": 0.02
+      }
+    },
+    "historical_observations_used": 19,
+    "ndmi_baseline_percentile": 52.94117647058823,
+    "ndmi_baseline_position": "BROAD_HISTORICAL_RANGE",
+    "observations_strictly_before_cutoff": 18,
+    "state": "NEUTRAL_OR_MIXED",
+    "supporting_context": "NDVI/NDRE trends and baseline comparisons describe vegetation condition only; they do not select the moisture state."
+  },
+  "retrospective": {
+    "full_season_trends": {
+      "NDMI": {
+        "direction": "increasing",
+        "fitted_change_over_span": 0.26115482602859325,
+        "method": "Theil-Sen median of pairwise slopes over elapsed days",
+        "observation_count": 44,
+        "slope_per_30_days": 0.06812734592050258,
+        "slope_per_day": 0.0022709115306834195,
+        "span_days": 115.0,
+        "stable_total_change_tolerance": 0.02
+      },
+      "NDRE": {
+        "direction": "increasing",
+        "fitted_change_over_span": 0.19288080148287762,
+        "method": "Theil-Sen median of pairwise slopes over elapsed days",
+        "observation_count": 44,
+        "slope_per_30_days": 0.05031673082162025,
+        "slope_per_day": 0.0016772243607206748,
+        "span_days": 115.0,
+        "stable_total_change_tolerance": 0.02
+      },
+      "NDVI": {
+        "direction": "increasing",
+        "fitted_change_over_span": 0.23319525855413897,
+        "method": "Theil-Sen median of pairwise slopes over elapsed days",
+        "observation_count": 44,
+        "slope_per_30_days": 0.06083354570977539,
+        "slope_per_day": 0.002027784856992513,
+        "span_days": 115.0,
+        "stable_total_change_tolerance": 0.02
+      }
+    },
+    "observation_count": 44,
+    "requested_date_range": {
+      "end_inclusive": "2025-07-31",
+      "start": "2025-04-01"
+    },
+    "used_in_decision": false,
+    "warning": "These full-season trends can include later observations. They are retained for audit/context only, never as information available at decision_as_of."
+  },
+  "season": {
+    "cloud_masking_methodology": {
+      "accepted_scl_classes": [
+        4,
+        5
+      ],
+      "denominators": "Valid coverage uses all polygon pixels. Vegetation percentage uses daily valid pixels. Index statistics use daily screened vegetation only.",
+      "excluded_scl_classes": {
+        "0": "No data",
+        "1": "Saturated/defective",
+        "10": "Thin cirrus",
+        "11": "Snow/ice",
+        "2": "Topographic cast shadow",
+        "3": "Cloud shadow",
+        "6": "Water",
+        "7": "Unclassified",
+        "8": "Medium probability cloud",
+        "9": "High probability cloud"
+      },
+      "pixel_validity": "Pixel center inside actual Tanager polygon AND SCL in {4,5} AND all four reflectances finite/nonnegative AND DN nonzero AND all index denominators > 0; unknown SCL excluded.",
+      "scene_cloud_percent_lt": 30
+    },
+    "interpretation": "No decreasing NDMI trend established over the requested period; this does not rule out local or short-term stress.",
+    "limitations": [
+      "Temporal spectral evidence is not ground-truth-confirmed drought, disease, water stress, a probability, or an irrigation recommendation.",
+      "NDMI responds to canopy moisture and structure; phenology, harvest, crop type, soil, irrigation, atmosphere and viewing geometry can also change it.",
+      "NDVI >= threshold is an uncalibrated PoC vegetation screen, not a crop map; it omits sparse/senescent vegetation and may remove declining pixels.",
+      "Vegetation and clear-pixel populations vary by date. Regional medians do not follow a fixed crop cohort or individual fields; inspect coverage and IQR.",
+      "SCL can miss clouds/shadows/haze. Excluding water, unclassified and cast-shadow classes is conservative and can introduce sampling bias.",
+      "Same-day clear-pixel mosaics may combine different platforms/overpasses. They preserve dates but are not instantaneous images.",
+      "Scene cloud filtering and missing/partial coverage create irregular, nonrandom sampling; each retained date receives equal weight.",
+      "The robust slope is descriptive, with an uncalibrated stability tolerance and no significance test; the April-July slope is not a diagnosis near June 8.",
+      "The recent baseline is one growing-season segment, not a multi-year climatology; its percentile and MAD distance are not probabilities or calibrated anomalies.",
+      "Sentinel-2 and Tanager have different spectral responses, spatial resolution and acquisition times; their index values and risk classes are not interchangeable.",
+      "Selected Sentinel center wavelengths lie inside 400-1700 nm; this does not simulate Arab Satellite 813 spectral response or truncate broad filter tails.",
+      "No ground sensors or validated crop/water-stress labels are available. Sentinel adds temporal context, not statistically independent confirmation of the shared spectral proxies."
+    ],
+    "requested_date_range": {
+      "end_inclusive": "2025-07-31",
+      "start": "2025-04-01"
+    },
+    "trend_methodology": "Equal-weight retained daily medians; Theil-Sen median pairwise slope per elapsed day. Broadly stable if absolute slope times observed span <= configurable 0.02 index units by default; otherwise sign determines direction. At least 3 dates. Descriptive PoC tolerance, no significance test.",
+    "usable_temporal_observations": 44
+  }
+}

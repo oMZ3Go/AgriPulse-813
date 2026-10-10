@@ -1,0 +1,19 @@
+{
+  "assessment": "Ground verification required",
+  "ml": "Unusual spectral patterns are present in some vegetation, but this does not identify their cause.",
+  "next_action": "Inspect highlighted areas and collect site-specific ground evidence before intervention.",
+  "projection": {
+    "evidence_level": "EO_ENHANCED",
+    "inspection_recommended": true,
+    "key_limitations": [
+      "Screening is not a diagnosis; evidence richness does not measure accuracy.",
+      "Human field observations are unavailable or not usable.",
+      "Usable calibrated site monitoring is unavailable.",
+      "Experimental evidence cannot establish a cause or diagnosis."
+    ],
+    "next_action": "Review the hotspot map against field boundaries; obtain quality-checked, site-calibrated soil-moisture observations in representative hotspot and comparison areas before considering an intervention.",
+    "status": "GROUND_VERIFICATION_REQUIRED"
+  },
+  "satellite": "Relative areas of concern are present",
+  "temporal": "No strong broad moisture decline confirmation"
+}

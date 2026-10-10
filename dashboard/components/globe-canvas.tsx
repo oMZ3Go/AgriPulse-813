@@ -4,8 +4,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Globe, { type GlobeMethods } from "react-globe.gl";
 import { MeshPhongMaterial } from "three";
 import { useReducedMotion } from "framer-motion";
-import { Pause, Play, RotateCcw } from "lucide-react";
-import { locations, type SceneId } from "@/lib/scenes";
+import { RotateCcw } from "lucide-react";
+import { countryById, locations } from "@/lib/scenes";
 import type { EarthGlobeProps } from "./earth-globe";
 
 export default function GlobeCanvas({ selected, onSelect }: EarthGlobeProps) {
@@ -14,11 +14,20 @@ export default function GlobeCanvas({ selected, onSelect }: EarthGlobeProps) {
   const onSelectRef = useRef(onSelect);
   const [size, setSize] = useState({ width: 0, height: 0 });
   const [ready, setReady] = useState(false);
-  const [paused, setPaused] = useState(false);
+  const [polygons, setPolygons] = useState<object[]>([]);
+  const [hovered, setHovered] = useState<string | null>(null);
+  const [focused, setFocused] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
   const reduced = useReducedMotion();
   const material = useMemo(() => new MeshPhongMaterial({ color: "#c5d6cb", shininess: 3, specular: "#172820" }), []);
-  const rotating = !paused && !selected && !reduced;
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch("/globe/countries.json", { signal: controller.signal }).then((response) => {
+      if (!response.ok) throw new Error("Local geography unavailable");
+      return response.json();
+    }).then((data) => setPolygons(data.features)).catch((error) => { if (error.name !== "AbortError") setFailed(true); });
+    return () => controller.abort();
+  }, []);
 
   useEffect(() => { onSelectRef.current = onSelect; }, [onSelect]);
   useEffect(() => {
@@ -33,21 +42,17 @@ export default function GlobeCanvas({ selected, onSelect }: EarthGlobeProps) {
   useEffect(() => {
     if (!ready || !globe.current) return;
     const controls = globe.current.controls();
-    controls.autoRotate = rotating;
-    controls.autoRotateSpeed = 0.22;
+    controls.autoRotate = false;
     controls.enableZoom = false;
     controls.enablePan = false;
-    controls.enableDamping = true;
+    controls.enableDamping = !reduced;
     controls.rotateSpeed = 0.45;
-    const stopOnInteraction = () => setPaused(true);
-    controls.addEventListener("start", stopOnInteraction);
-    return () => controls.removeEventListener("start", stopOnInteraction);
-  }, [ready, rotating]);
+  }, [ready, reduced]);
 
   useEffect(() => {
     if (!ready || !selected) return;
-    const location = locations.find((item) => item.id === selected)!;
-    globe.current?.pointOfView({ lat: location.lat - 3, lng: location.lng - 4, altitude: size.width < 500 ? 1.95 : 1.5 }, reduced ? 0 : 850);
+    globe.current?.pointOfView({ lat: selected.lat, lng: selected.lng, altitude: size.width < 500 ? 1.95 : 1.5 }, reduced ? 0 : 350);
+    setFocused(selected.id);
   }, [selected, ready, reduced, size.width]);
 
   useEffect(() => {
@@ -87,7 +92,8 @@ export default function GlobeCanvas({ selected, onSelect }: EarthGlobeProps) {
     caption.textContent = location.label;
     label.append(name, caption);
     button.append(dot, label);
-    button.onclick = () => onSelectRef.current(location.id as SceneId);
+    button.onpointerdown = (event) => event.stopPropagation();
+    button.onclick = (event) => { event.stopPropagation(); const country = countryById(location.countryId); if (country) onSelectRef.current(country); };
     return button;
   }, []);
 
@@ -98,12 +104,14 @@ export default function GlobeCanvas({ selected, onSelect }: EarthGlobeProps) {
   }
 
   function resetView() {
-    const location = locations.find((item) => item.id === selected);
-    globe.current?.pointOfView(location ? { lat: location.lat - 3, lng: location.lng - 4, altitude: size.width < 500 ? 1.95 : 1.5 } : { lat: 23, lng: 22, altitude: size.width < 500 ? 2.3 : 1.75 }, reduced ? 0 : 850);
+    globe.current?.pointOfView(selected ? { lat: selected.lat, lng: selected.lng, altitude: size.width < 500 ? 1.95 : 1.5 } : { lat: 23, lng: 22, altitude: size.width < 500 ? 2.3 : 1.75 }, reduced ? 0 : 350);
   }
 
+  const polygonId = (polygon: object) => (polygon as { id: string }).id;
+  const landPalette = ["#344d40", "#3a5144", "#40584a", "#354a40", "#3c5547"];
+
   return (
-    <div ref={container} className="globe-canvas" data-globe-ready={ready && !failed ? "true" : "false"}>
+    <div ref={container} className="globe-canvas" data-globe-ready={ready && polygons.length > 0 && !failed ? "true" : "false"} data-focused-country={focused} data-focus-lat={selected?.lat} data-focus-lng={selected?.lng} data-hover-country={hovered} style={{ cursor: hovered ? "pointer" : "grab" }}>
       {failed ? <div className="globe-placeholder" role="status"><p>Earth view unavailable on this device</p><span>Use the region controls to continue.</span></div> : size.width > 0 && <Globe
         ref={globe}
         width={size.width}
@@ -115,6 +123,19 @@ export default function GlobeCanvas({ selected, onSelect }: EarthGlobeProps) {
         atmosphereColor="#638779"
         atmosphereAltitude={0.055}
         animateIn={false}
+        polygonsData={polygons}
+        polygonCapColor={(polygon) => polygonId(polygon) === selected?.id ? "#4b7b68" : polygonId(polygon) === hovered ? "#496b59" : landPalette[Array.from(polygonId(polygon)).reduce((sum, char) => sum + char.charCodeAt(0), 0) % landPalette.length]}
+        polygonSideColor={() => "#1b3229"}
+        polygonStrokeColor={(polygon) => polygonId(polygon) === selected?.id ? "#92d7c4" : polygonId(polygon) === hovered ? "#72bfb0" : "#61746355"}
+        polygonAltitude={0.002}
+        polygonsTransitionDuration={reduced ? 0 : 250}
+        polygonLabel={(polygon) => countryById(polygonId(polygon))?.name ?? ""}
+        onPolygonHover={(polygon) => setHovered(polygon ? polygonId(polygon) : null)}
+        onPolygonClick={(polygon, event) => {
+          // HTML locators sit over the WebGL surface; never also pick the land beneath them.
+          if (event.target instanceof Element && event.target.closest(".earth-marker")) return;
+          const country = countryById(polygonId(polygon)); if (country) onSelectRef.current(country);
+        }}
         htmlElementsData={locations}
         htmlElement={createMarker}
         htmlAltitude={0.008}
@@ -122,7 +143,7 @@ export default function GlobeCanvas({ selected, onSelect }: EarthGlobeProps) {
         onGlobeReady={onReady}
         rendererConfig={{ antialias: true, alpha: true, powerPreference: "low-power" }}
       />}
-      {!failed && <div className="globe-tools"><span>Drag to explore</span><button onClick={resetView} aria-label="Reset globe view" title="Reset view"><RotateCcw size={14} /></button><button onClick={() => setPaused(!paused)} aria-label={rotating ? "Pause globe rotation" : "Resume globe rotation"} title={selected ? "Rotation pauses while a region is selected" : reduced ? "Rotation disabled by reduced-motion preference" : "Toggle rotation"} disabled={Boolean(selected) || Boolean(reduced)}>{rotating ? <Pause size={14} /> : <Play size={14} />}</button></div>}
+      {!failed && <div className="globe-tools"><span>Drag to explore · click a country</span><button onClick={resetView} aria-label="Reset globe view" title="Reset view"><RotateCcw size={14} /></button></div>}
       <p className="globe-caption">Geographic context <span>·</span> not scene coverage</p>
     </div>
   );

@@ -836,3 +836,55 @@ The frontend uses Next.js, TypeScript, Tailwind CSS, Framer Motion, and
 react-globe.gl. Production run instructions are in the [frontend README](dashboard/README.md).
 Real scientific-output integration and evidence visualizations are deferred to
 Stage 5B. Stage 5A adds no API, authentication, database, IoT, ML, or irrigation controls.
+
+## Stage 5B – Real Product Flows and Konya Evidence
+
+Stage 5B evolves the Stage 5A interface described above. Its former placeholders
+now display the real validated Konya package; the scientific stages remain
+unchanged. See the [dashboard guide](dashboard/README.md) and
+[delivery report](dashboard/STAGE_5B_REPORT.md).
+
+The three independent use cases are **Explore Earth**, **Verify My Field** and
+**Smart Farm**. Each supports **Simple / Expert** presentation. Simple shows
+ground verification required, relative satellite concerns, neutral/mixed temporal
+context, experimental spectral unusualness, unavailable ground evidence and a
+clear inspection recommendation. Expert exposes the existing spatial, temporal,
+hyperspectral, ML, fusion, provenance and limitation records and figures.
+
+A local searchable country list and clickable globe share selection state and
+camera focus. Konya remains the gold validated demo; Syria remains a target
+deployment without validated analysis. **Global location selection does not
+imply validated analysis for every location.** Other countries lead to an honest
+AOI preparation shell; live global processing is not executed. Point, bounding
+box and polygon drawing remain upcoming.
+
+The deterministic presentation exporter reads existing outputs and the unchanged
+Stage 4.7 contract, validates consistency and saved local lineage, and exports
+nine compact JSON documents plus ten original figures to
+`dashboard/public/data/konya/` (about 4.6 MB). No raw HDF5, Sentinel cache, pixel
+arrays or credentials are copied. TypeScript displays results without repeating
+scientific decisions. Regenerate or verify from the repository root:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\export_dashboard.py
+.\.venv\Scripts\python.exe scripts\export_dashboard.py --check
+```
+
+The activity panel tracks actual local reads and integrity checks, finishing as
+soon as data are ready. The evidence-availability panel reads the contract:
+Sentinel-2, temporal, hyperspectral and experimental ML are available; weather is
+not checked/not integrated, Ground Observation unavailable and IoT not connected.
+Verify My Field describes a future Ground Observation pathway. Smart Farm
+describes a future calibrated sensor connection; neither fabricates records.
+
+The saved decision remains **GROUND_VERIFICATION_REQUIRED**, rule D06, with
+**automation_allowed: false** and level **EO_ENHANCED**. Evidence richness is not
+accuracy. The 19 decision-time observations are distinguished from the 44-date
+full-season retrospective plot. Experimental unsupervised spectral anomaly ML
+does not change the decision; its near-zero Stage 2 relationship remains visible.
+
+Run locally using the commands above (`cd dashboard`, `npm.cmd ci`,
+`npm.cmd run dev`), then open **http://127.0.0.1:3000**. Stage 5B adds no live EO
+backend, weather integration, sensor ingestion, Ground Observation persistence,
+supervised learning or intervention automation. No Stage 5C work or deployment
+is included.

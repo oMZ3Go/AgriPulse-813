@@ -1,32 +1,66 @@
-import { ArrowRight, Fingerprint, Layers3, Map, Workflow } from "lucide-react";
-import { EmptyEvidence, PlaceholderBadge, SectionHeading } from "@/components/ui";
-import { type ExpertSection } from "@/lib/scenes";
+import { ArrowRight, LockKeyhole } from "lucide-react";
+import { SectionHeading } from "@/components/ui";
+import { ScientificFigure } from "@/components/scientific-figure";
+import type { KonyaData } from "@/lib/konya";
+import { expertSections, type ExpertSection } from "@/lib/scenes";
 
-const evidence = [
-  { id: "spatial" as const, icon: Map, stage: "STAGE 2", title: "Spatial risk", description: "Scene-relative moisture-risk evidence", detail: "Vegetation mask, spatial distribution, and relative risk classes." },
-  { id: "temporal" as const, icon: Fingerprint, stage: "STAGE 3", title: "Temporal evidence", description: "Context across Sentinel-2 observations", detail: "Observation sequence, coverage, descriptive trends, and baseline context." },
-  { id: "fusion" as const, icon: Workflow, stage: "STAGE 4", title: "Decision fusion", description: "A transparent path through the evidence", detail: "Evidence states, decision cutoff, rule trace, and ground-verification status." },
-  { id: "spectral" as const, icon: Layers3, stage: "STAGE 4.5", title: "Hyperspectral value", description: "Fine structure beyond a compact baseline", detail: "Spectral signatures, group differences, and information-content comparison." },
-];
+const number = (value: number) => value.toLocaleString("en-US");
+function Metrics({ items }: { items: [string, string][] }) { return <dl className="metric-row">{items.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>; }
+function Limits({ items }: { items: string[] }) { return <details className="limitations-disclosure"><summary>Methodology and limitations</summary><ul>{items.map((item) => <li key={item}>{item}</li>)}</ul></details>; }
 
-export function ExpertShell({ view, onView }: { view: ExpertSection; onView: (view: ExpertSection) => void }) {
-  if (view === "methodology") return <Methodology />;
-  if (view === "provenance") return <Provenance />;
-  const active = evidence.find((item) => item.id === view);
-  if (active) return <><SectionHeading eyebrow={`${active.stage} / Expert workspace`} title={active.title} description={active.description} /><section className="panel analytical-panel"><div className="panel-header"><div><p className="eyebrow">Evidence area</p><h2>{active.id === "spectral" ? "Spectral signatures & comparison" : active.id === "temporal" ? "Observation timeline" : active.id === "fusion" ? "Evidence-to-decision trace" : "Scene-relative risk distribution"}</h2></div><PlaceholderBadge /></div><EmptyEvidence title="Evidence will appear here" description={active.detail} spatial={active.id === "spatial"} /></section><div className="expert-detail-grid"><section className="panel text-panel"><p className="eyebrow">Prepared for this view</p><h2>{active.id === "spatial" ? "Risk evidence & exclusions" : active.id === "temporal" ? "Trends & observation coverage" : active.id === "fusion" ? "Rule logic & verification" : "Signatures & spectral context"}</h2><p>{active.detail} These areas are placeholders; no values are displayed.</p><PlaceholderBadge /></section><section className="panel text-panel"><p className="eyebrow">Interpret with care</p><h2>{active.id === "spatial" ? "Relative does not mean absolute." : active.id === "temporal" ? "A trend does not establish a cause." : active.id === "fusion" ? "A decision still needs human review." : "More bands are not proof of accuracy."}</h2><p>{active.id === "spatial" ? "Scene-relative ranks are neither drought probabilities nor calibrated stress prevalence." : active.id === "temporal" ? "Clouds, phenology, harvest, and changing observation coverage can affect apparent trends." : active.id === "fusion" ? "Satellite agreement does not replace field verification. Automatic irrigation is unavailable." : "Spectral separation is exploratory and may reflect crop, soil, canopy, or atmospheric differences."}</p><button className="text-button" onClick={() => onView("methodology")}>Read the limitations <ArrowRight size={14} /></button></section></div></>;
-  return <><SectionHeading eyebrow="Expert workspace" title="Trace the evidence." description="Spectral detail, temporal context, and a transparent path toward field verification." /><div className="expert-overview-grid">{evidence.map(({ id, icon: Icon, stage, title, description }) => <button className="evidence-module" key={id} onClick={() => onView(id)}><div className="module-top"><Icon size={21} strokeWidth={1.4} /><span className="mono">{stage}</span></div><h2>{title}</h2><p>{description}</p><div className="module-empty"><span />Evidence not connected</div><div className="module-bottom"><PlaceholderBadge /><ArrowRight size={17} /></div></button>)}</div><section className="evidence-chain panel"><div className="panel-header"><div><p className="eyebrow">The decision pathway</p><h2>Context before conclusion.</h2></div><PlaceholderBadge /></div><div className="chain-steps">{["Spectral evidence", "Temporal context", "Ground verification", "Human review"].map((label, i) => <div key={label}><span className="mono">0{i + 1}</span><strong>{label}</strong><small>{i === 2 ? "Future verification" : "Not connected"}</small>{i < 3 && <ArrowRight size={16} />}</div>)}</div></section><div className="expert-bottom-links"><button className="text-button" onClick={() => onView("methodology")}>Methodology & limitations <ArrowRight size={15} /></button><button className="text-button" onClick={() => onView("provenance")}>Data provenance <ArrowRight size={15} /></button></div></>;
-}
-
-function Methodology() {
-  return <><SectionHeading eyebrow="Scientific context" title="Know the limits of the signal." description="The interpretation principles that guide AgriPulse-813. No scene results are displayed here." /><div className="methodology-list">{[
-    ["Relative evidence", "Scene-relative moisture-risk ranks prioritize areas for verification. They are not calibrated drought probabilities, diagnoses, or irrigation prescriptions."],
-    ["Time and context", "Sentinel-2 adds temporal context. Phenology, harvest, vegetation coverage, and observation quality can influence the signal. A short baseline is not a climatology."],
-    ["Ground verification", "Satellite evidence cannot establish ground truth alone. Site-relevant, quality-checked field observations are needed before interpreting a cause or considering intervention."],
-    ["Hyperspectral interpretation", "Fine spectral structure preserves information beyond a compact index baseline. Group differences do not independently validate water stress or establish improved detection accuracy."],
-    ["Human responsibility", "AgriPulse supports evidence review. Automatic irrigation and control systems are outside this demo."],
-  ].map(([title, text], index) => <section key={title}><span className="mono">0{index + 1}</span><h2>{title}</h2><p>{text}</p></section>)}</div><p className="methodology-footnote">These principles summarize the repository methodology. Detailed formulas, provenance, and result-specific limitations remain for the data integration stage.</p></>;
-}
-
-function Provenance() {
-  return <><SectionHeading eyebrow="Source context" title="Keep the origin in view." description="A place for traceable inputs, processing context, and evidence integrity." /><section className="panel provenance-context"><p className="eyebrow gold-text">Current validated demo scene</p><h2>Konya, Turkey</h2><p>The processed demo scene is in Turkey. Syria and the Arab region are the intended deployment context; they do not have validated analysis in this demo.</p></section><div className="provenance-table" role="table" aria-label="Data source context"><div className="provenance-row provenance-head" role="row"><span role="columnheader">Source</span><span role="columnheader">Role</span><span role="columnheader">Preview status</span></div>{[["Planet Tanager", "Hyperspectral observations"], ["Sentinel-2", "Temporal observations"], ["Ground observations", "Future local verification"]].map(([source, role]) => <div className="provenance-row" role="row" key={source}><strong role="cell">{source}</strong><span role="cell">{role}</span><span role="cell">Not connected</span></div>)}</div><section className="panel text-panel provenance-placeholder"><div><p className="eyebrow">Provenance records</p><h2>Source records will appear here.</h2><p>Acquisition times, scene identifiers, processing versions, quality masks, and input checksums are reserved for connected evidence.</p></div><PlaceholderBadge /></section></>;
+export function ExpertShell({ data, view, onView }: { data: KonyaData; view: ExpertSection; onView: (view: ExpertSection) => void }) {
+  const { contract, spatial, temporal, spectral, ml, fusion, provenance } = data;
+  const section = expertSections.find((item) => item.id === view)!;
+  const figures = view in data.manifest.figures ? data.manifest.figures[view as keyof typeof data.manifest.figures] : [];
+  const title = view === "overview" ? "Trace the evidence." : view === "ml" ? "Experimental Spectral Anomaly ML" : section.label;
+  return <><SectionHeading eyebrow={`${section.stage} / Expert View`} title={title} description={view === "overview" ? "The validated Konya evidence package. Inspect each layer, its origin and its limits." : "Saved scientific evidence · Konya, Turkey · 20250608_091605_90_4001"} />
+    {view === "overview" && <>
+      <section className="assessment-card"><div><p className="eyebrow gold-text">Stage 4 · Rule {fusion.matched_rule_id}</p><h2>{contract.decision_state.replaceAll("_", " ")}</h2><p>{contract.recommended_next_action}</p></div><div className="policy-note"><LockKeyhole size={18} /><strong>automation_allowed: false</strong></div></section>
+      <div className="expert-overview-grid">{[
+        ["spatial", "Relative hotspots present", "Scene-relative priorities for field inspection."],
+        ["temporal", "Neutral / mixed context", "No strong broad moisture decline confirmation."],
+        ["spectral", "Hyperspectral detail", "Fine spectral structure beyond the compact index baseline."],
+        ["ml", "Experimental spectral anomaly", "Unusual vegetation spectra; cause unconfirmed."],
+      ].map(([id, heading, text]) => <button className="evidence-module" key={id} onClick={() => onView(id as ExpertSection)}><p className="eyebrow">{expertSections.find((item) => item.id === id)?.stage}</p><h2>{heading}</h2><p>{text}</p><span className="module-bottom">Review evidence <ArrowRight size={16} /></span></button>)}</div>
+      <p className="science-note">The analysis level {contract.analysis_level} describes evidence richness, not accuracy or calibrated confidence. Ground evidence is unavailable. The experimental ML layer does not select or modify the Stage 4 decision.</p>
+    </>}
+    {view === "spatial" && <>
+      <Metrics items={[["Classified vegetation pixels", number(spatial.summary.classified_vegetation_pixels)], ["Vegetation screen", `NDVI ≥ ${spatial.summary.vegetation_threshold}`], ["Score interpretation", "Relative rank · not probability"]]} />
+      <p className="science-note">These are image-pixel maps of the processed scene. Field boundaries are not available. Relative classes identify sampling priorities, not drought prevalence.</p>
+      <div className="evidence-table-wrap"><table className="evidence-table"><caption>Class context · denominator: classified vegetation pixels</caption><thead><tr><th>Relative class</th><th>Pixels</th><th>Share of classified vegetation</th></tr></thead><tbody>{(["Low", "Moderate", "High", "Very High"] as const).map((name) => <tr key={name}><th>{name}</th><td>{number(spatial.statistics.risk_class_counts[name])}</td><td>{spatial.summary.risk_class_percentages[name].toFixed(2)}%</td></tr>)}</tbody></table></div>
+      <Limits items={spatial.summary.limitations} />
+    </>}
+    {view === "temporal" && <>
+      <Metrics items={[["Decision-time observations", String(temporal.decision_time.historical_observations_used)], ["Full-season observations", String(temporal.season.usable_temporal_observations)], ["Decision-time state", temporal.decision_time.state.replaceAll("_", " ")]]} />
+      <section className="panel text-panel"><p className="eyebrow">Decision cutoff · {contract.decision_as_of}</p><h2>No strong broad moisture decline confirmation</h2><p>{temporal.decision_time.category_reason}</p><p>{temporal.decision_time.cutoff_rule}</p></section>
+      <div className="evidence-table-wrap"><table className="evidence-table"><caption>Saved Stage 4 trends at the cutoff · no frontend trend calculation</caption><thead><tr><th>Index</th><th>Direction</th><th>Slope / day</th><th>Baseline percentile</th></tr></thead><tbody>{(["NDVI", "NDRE", "NDMI"] as const).map((index) => <tr key={index}><th>{index}</th><td>{temporal.decision_time.decision_time_trends[index].direction}</td><td>{temporal.decision_time.decision_time_trends[index].slope_per_day.toFixed(6)}</td><td>{temporal.decision_time.baseline.indices[index].target_empirical_percentile.toFixed(2)}</td></tr>)}</tbody></table></div>
+      <p className="science-note">The baseline percentile is a rank, not a probability. The figure below includes later April–July observations for retrospective context only; they did not select the decision.</p>
+      <Limits items={temporal.season.limitations} />
+    </>}
+    {view === "spectral" && <>
+      <Metrics items={[["In-window band centers", String(spectral.number_of_bands_in_range)], ["Bands with both-group statistics", String(spectral.bands_with_statistics_in_both_groups)], ["Compatibility window", "400–1700 nm"]]} />
+      <section className="panel text-panel"><h2>Fine structure, with interpretation limits.</h2><p>{spectral.information_comparison.conclusion}</p><p>{spectral.information_comparison.compact_baseline}</p><p>Risk-selected groups share the same scene and indices. Their separation is not independent validation. No Satellite 813 response simulation or accuracy benchmark is claimed.</p></section>
+      <Limits items={spectral.limitations} />
+    </>}
+    {view === "ml" && <>
+      <p className="science-note ml-caution">Identifies vegetation spectra that are unusual relative to the current scene. Unsupervised, exploratory, scene-relative and not field-calibrated. Not a probability, drought detection, disease detection or independent validation of Stage 2. The Stage 4 decision remains unchanged.</p>
+      <Metrics items={[["Eligible vegetation pixels", number(ml.eligible_vegetation_pixel_count)], ["Usable spectral bands", String(ml.usable_band_count)], ["Retained PCA components", String(ml.pca.retained_component_count)]]} />
+      <section className="panel text-panel"><p className="eyebrow">Descriptive comparison with Stage 2</p><h2>Spearman ρ ≈ {ml.descriptive_stage2_comparison.spearman_rank_correlation >= 0 ? "+" : ""}{ml.descriptive_stage2_comparison.spearman_rank_correlation.toFixed(6)}</h2><p>The near-zero relationship is retained. Moisture-risk ranks and spectral unusualness answer different questions; neither layer independently validates the other.</p><p>{ml.descriptive_stage2_comparison.interpretation}</p></section>
+      <details className="limitations-disclosure"><summary>Model and score details</summary><p>{ml.anomaly_score_definition}</p><Metrics items={[["Fitting sample", number(ml.fitting_sample_size)], ["Median raw score", ml.anomaly_statistics.median.toFixed(6)], ["Retained sample variance", ml.pca.cumulative_explained_variance.toFixed(6)]]} /><p>Retained variance is not predictive accuracy. No binary anomaly threshold or known anomaly fraction is asserted.</p></details>
+      <Limits items={ml.scientific_limitations} />
+    </>}
+    {view === "fusion" && <>
+      <section className="assessment-card"><div><p className="eyebrow">Matched rule · {fusion.matched_rule_id}</p><h2>{fusion.decision}</h2><p>{fusion.recommended_next_step}</p></div><div className="policy-note"><LockKeyhole size={18} /><strong>automation_allowed: false</strong></div></section>
+      <ol className="reasoning-trace">{fusion.reasoning_trace.map((entry) => <li key={entry.rule_id}><span className="mono">{entry.rule_id}</span><p>{entry.explanation}</p></li>)}</ol>
+      <Limits items={fusion.limitations} />
+    </>}
+    {view === "provenance" && <>
+      <section className="panel text-panel"><p className="eyebrow gold-text">Current validated demo scene</p><h2>Konya, Turkey</h2><p>Scene: {provenance.scene.scene_id}</p><p>Acquisition: {provenance.scene.acquisition_date}</p><p>Decision cutoff: {contract.decision_as_of}</p><p>AOI bbox [west, south, east, north]: {provenance.scene.bbox.map((value) => value.toFixed(6)).join(", ")}</p><p>{provenance.attribution}</p></section>
+      <p className="science-note">This is a retrospective reconstruction, not evidence of an operational decision made in 2025. The source hashes support reproducibility and change detection, not authenticity. No raw satellite assets are shipped to the browser.</p>
+      <div className="source-records">{provenance.sources.map((source) => <details key={source.path}><summary>{source.path}</summary><p>{number(source.bytes)} bytes</p><code>SHA-256 {source.sha256}</code></details>)}</div>
+      <Limits items={[provenance.scene.valid_pixel_definition, provenance.lineage.note]} />
+    </>}
+    {view === "methodology" && <div className="methodology-list">{contract.limitations.map((text, index) => <section key={text}><span className="mono">{String(index + 1).padStart(2, "0")}</span><p>{text}</p></section>)}</div>}
+    {figures.map((figure) => <ScientificFigure key={figure.src} figure={figure} />)}
+  </>;
 }

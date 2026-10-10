@@ -1,62 +1,73 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback } from "react";
 import Link from "next/link";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { ArrowRight, ArrowUpRight, Check, ChevronLeft, Fingerprint, Layers3, MoveUpRight, ScanLine, Sprout } from "lucide-react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { ArrowRight, ArrowUpRight, ChevronLeft, Fingerprint, Layers3, Sprout } from "lucide-react";
 import { EarthGlobe } from "@/components/earth-globe";
-import type { SceneId } from "@/lib/scenes";
+import { CountrySelector } from "@/components/country-selector";
+import { UseCasePicker } from "@/components/use-case-picker";
+import { ModeSwitch } from "@/components/mode-switch";
+import { countryById, type Country } from "@/lib/scenes";
+import { parseMode, parseUseCase, productUrl, useCases, type Mode, type UseCase } from "@/lib/product";
 
 export function SceneExperience({ variant }: { variant: "landing" | "selection" }) {
-  const [selected, setSelected] = useState<SceneId | null>(null);
-  const reduced = useReducedMotion();
+  const search = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  const selected = countryById(search.get("country"));
+  const useCase = parseUseCase(search.get("useCase"));
+  const mode = parseMode(search.get("mode"));
   const isLanding = variant === "landing";
-
-  return (
-    <main id="main-content">
-      <section className={`experience ${isLanding ? "hero" : "scene-experience"}`} aria-label={isLanding ? "AgriPulse introduction" : "Scene selection"}>
-        <div className="experience-copy">
-          {isLanding ? <>
-            <p className="eyebrow"><span className="little-line" /> A clearer view. A considered response.</p>
-            <h1>From spectral<br />signals to<br /><span>grounded decisions.</span></h1>
-            <p className="hero-description">Earth-observation intelligence that combines hyperspectral, temporal, and ground evidence before recommending action.</p>
-            <div className="hero-actions"><Link className="button button-primary" href="/scene">Launch Demo <ArrowUpRight size={18} /></Link><span className="quiet-label">Rooted in evidence.<br />Designed for the field.</span></div>
-            <div className="creator-line"><span className="creator-mark">BTL</span><p>A <strong>Beyond The Limit</strong> project<span>Arab Youth Space Hackathon · Challenge 813</span></p></div>
-          </> : <>
-            <Link href="/" className="back-link"><ChevronLeft size={14} /> Back to Earth view</Link>
-            <p className="eyebrow"><span className="little-line" /> The starting point</p>
-            <h1>One real scene.<br /><span>A wider ambition.</span></h1>
-            <p className="hero-description">Explore our current demo in Konya, Turkey. Our intended deployment begins with Syria and the Arab region.</p>
-            <div className="scene-options" aria-label="Available regions">
-              <button className={`scene-option validated ${selected === "konya" ? "selected" : ""}`} onClick={() => setSelected("konya")} aria-pressed={selected === "konya"}>
-                <span className="location-dot gold" /><span><span className="option-kicker">Current validated demo scene</span><strong>Konya, Turkey</strong><span className="option-description">Planet Tanager + Sentinel-2</span></span>{selected === "konya" ? <Check size={18} /> : <ArrowUpRight size={18} />}
-              </button>
-              <button className={`scene-option target ${selected === "syria" ? "selected" : ""}`} onClick={() => setSelected("syria")} aria-pressed={selected === "syria"}>
-                <span className="location-dot teal hollow" /><span><span className="option-kicker">Target deployment</span><strong>Syria and the Arab region</strong><span className="option-description">Future application · no validated analysis</span></span><ArrowUpRight size={18} />
-              </button>
-            </div>
-          </>}
+  const selectCountry = useCallback((country: Country) => {
+    router.replace(productUrl(pathname, useCase, mode, { country: country.id }), { scroll: false });
+  }, [pathname, router, useCase, mode]);
+  function updateProduct(nextCase: UseCase, nextMode: Mode) {
+    router.replace(productUrl(pathname, nextCase, nextMode, selected ? { country: selected.id } : {}), { scroll: false });
+  }
+  const sceneUrl = productUrl("/scene", useCase, mode, selected ? { country: selected.id } : {});
+  const demoUrl = productUrl("/dashboard", useCase, mode);
+  return <main id="main-content">
+    <section className={`experience ${isLanding ? "hero intro-sequence" : "scene-experience"}`} aria-label={isLanding ? "AgriPulse introduction" : "Geographic selection"}>
+      <div className="experience-copy">
+        {isLanding ? <>
+          <p className="eyebrow intro-copy"><span className="little-line" /> A clearer view. A considered response.</p>
+          <h1 className="intro-copy">From spectral<br />signals to<br /><span>grounded decisions.</span></h1>
+          <p className="hero-description intro-copy">Earth-observation intelligence that brings spectral detail and temporal context together. A clearer starting point for verification on the ground.</p>
+          <div className="hero-actions intro-cta"><Link className="button button-primary" href={sceneUrl}>Choose an area <ArrowUpRight size={18} /></Link><Link className="text-button" href={demoUrl}>Open validated demo <ArrowRight size={15} /></Link></div>
+          <div className="creator-line"><span className="creator-mark">BTL</span><p>A <strong>Beyond The Limit</strong> project<span>Arab Youth Space Hackathon · Challenge 813</span></p></div>
+        </> : <>
+          <Link href="/" className="back-link"><ChevronLeft size={14} /> Back to Earth view</Link>
+          <p className="eyebrow"><span className="little-line" /> 01 / Choose your perspective</p>
+          <h1>One real scene.<br /><span>A wider ambition.</span></h1>
+          <p className="hero-description">Choose how you want to work, then select a country. The validated Konya scene is ready to explore.</p>
+          <UseCasePicker value={useCase} onChange={(next) => updateProduct(next, mode)} />
+          <p className="use-case-detail">{useCases.find((item) => item.id === useCase)?.detail}</p>
+          <div className="presentation-choice"><p className="eyebrow">Presentation depth</p><ModeSwitch mode={mode} onChange={(next) => updateProduct(useCase, next)} /><p>Any use case, either view.</p></div>
+        </>}
+      </div>
+      <div className="earth-column intro-earth">
+        <div className="earth-topline"><span className="mono">EARTH / GEOGRAPHIC SELECTION</span><span className="earth-topline-rule" /><span className="mono">813</span></div>
+        <CountrySelector selected={selected} onSelect={selectCountry} />
+        <EarthGlobe selected={selected} onSelect={selectCountry} />
+        <div className="globe-region-controls" aria-label="Featured regions">
+          <button onClick={() => selectCountry(countryById("792")!)} aria-pressed={selected?.id === "792"}><span className="location-dot gold" /><span>Konya, Turkey<small>Current validated demo scene</small></span><ArrowUpRight size={15} /></button>
+          <button onClick={() => selectCountry(countryById("760")!)} aria-pressed={selected?.id === "760"}><span className="location-dot teal hollow" /><span>Syria<small>Target deployment · not validated</small></span></button>
         </div>
-
-        <div className="earth-column">
-          <div className="earth-topline"><span className="mono">EARTH / REGIONAL CONTEXT</span><span className="earth-topline-rule" /><span className="mono">813</span></div>
-          <EarthGlobe selected={selected} onSelect={setSelected} />
-          {isLanding && <div className="globe-region-controls" aria-label="Explore regions"><button onClick={() => setSelected("konya")} aria-pressed={selected === "konya"}><span className="location-dot gold" /><span>Konya, Turkey<small>Current validated demo scene</small></span><MoveUpRight size={15} /></button><button onClick={() => setSelected("syria")} aria-pressed={selected === "syria"}><span className="location-dot teal hollow" /><span>Syria<small>Target deployment</small></span></button></div>}
-          <AnimatePresence mode="wait">
-            {selected && <motion.div className="scene-detail" key={selected} initial={{ opacity: 0, y: reduced ? 0 : 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }} role="status">
-              {selected === "konya" ? <><div><p className="eyebrow gold-text">Current validated demo scene</p><h2>Konya, Turkey</h2><p>Planet Tanager hyperspectral<br />Sentinel-2 temporal observations</p></div><Link href="/dashboard" className="button button-primary">Open dashboard <ArrowRight size={17} /></Link><p className="scene-disclosure">Explore the interface. Analysis panels are placeholders.</p></> : <><p className="eyebrow teal-text">Target deployment</p><h2>Syria and the Arab region</h2><p>Our intended application context. There is no validated AgriPulse analysis for this region in the current demo.</p><button className="text-button" onClick={() => setSelected("konya")}>Explore the Konya demo <ArrowRight size={16} /></button></>}
-            </motion.div>}
-          </AnimatePresence>
-          {!selected && !isLanding && <p className="scene-prompt"><ScanLine size={16} /> Select Konya to enter the demo workspace.</p>}
-        </div>
-      </section>
-
-      {isLanding ? <section className="evidence-strip" aria-label="The evidence approach"><div className="evidence-intro"><p className="eyebrow">The evidence approach</p><p>Understand more.<br /><span>Assume less.</span></p></div><EvidenceStep number="01" icon={<Layers3 size={18} />} title="Spectral detail" text="Look beyond what the eye can see." /><EvidenceStep number="02" icon={<Fingerprint size={18} />} title="Temporal context" text="Understand the signal over time." /><EvidenceStep number="03" icon={<Sprout size={18} />} title="Grounded action" text="Verify in the field before acting." /></section> : <div className="selection-note"><span className="mono">DEMO CONTEXT</span><p>“Validated demo scene” identifies the processed dataset. Satellite evidence does not establish ground-truth-confirmed stress.</p></div>}
-      <footer className="site-footer"><span>AgriPulse-813 <span className="footer-slash">/</span> Beyond The Limit</span><span>Evidence before action.</span></footer>
-    </main>
-  );
+        {selected ? <section className="area-selection scene-detail" aria-label="Area selection">
+          <div role="status"><p className="eyebrow teal-text">Location selected · {selected.name}</p><h2>Choose an area to analyse</h2><p>A country selection provides geographic context. It does not mean the country has been analysed.</p></div>
+          {selected.id === "792" ? <div className="validated-area"><p className="eyebrow gold-text">Current validated demo scene</p><h3>Konya, Turkey</h3><p>Planet Tanager + Sentinel-2 · 8 June 2025 scene</p><Link href={demoUrl} className="button button-primary">Open validated demo <ArrowRight size={16} /></Link></div> :
+            <><p>{selected.id === "760" ? "Syria is our target deployment context. " : ""}Live global EO processing has not yet been executed for this location in this PoC. The validated Konya demo is available now.</p><Link href={demoUrl} className="text-button">Open validated Konya demo <ArrowRight size={14} /></Link></>}
+          <details className="aoi-future"><summary>Area selection options · upcoming</summary><p>Point, bounding box and polygon selection are planned for agricultural areas. Drawing and live analysis are not connected yet.</p><div className="aoi-options"><span>Point</span><span>Bounding box</span><span>Polygon</span></div></details>
+        </section> : <p className="scene-prompt">Search or click a country to choose your starting point.</p>}
+      </div>
+    </section>
+    {isLanding && <section className="product-section" aria-label="Choose a product flow"><div><p className="eyebrow">Three ways to begin</p><h2>Your purpose. Your perspective.</h2></div><UseCasePicker value={useCase} onChange={(next) => updateProduct(next, mode)} /><p className="use-case-detail">{useCases.find((item) => item.id === useCase)?.detail}</p><Link className="text-button" href={sceneUrl}>Continue with {useCases.find((item) => item.id === useCase)?.label} <ArrowRight size={15} /></Link></section>}
+    <section className="evidence-strip" aria-label="The evidence approach"><div className="evidence-intro"><p className="eyebrow">The evidence approach</p><p>Understand more.<br /><span>Assume less.</span></p></div><EvidenceStep number="01" icon={<Layers3 size={18} />} title="Spectral detail" text="Look beyond what the eye can see." /><EvidenceStep number="02" icon={<Fingerprint size={18} />} title="Temporal context" text="Understand the signal over time." /><EvidenceStep number="03" icon={<Sprout size={18} />} title="Grounded action" text="Verify in the field before acting." /></section>
+    <p className="demo-disclosure">“Validated demo scene” identifies the processed dataset. Satellite screening is not a diagnosis or ground-truth confirmation.</p>
+    <footer className="site-footer"><span>AgriPulse-813 <span className="footer-slash">/</span> Beyond The Limit</span><span>Evidence before action.</span></footer>
+  </main>;
 }
-
 function EvidenceStep({ number, icon, title, text }: { number: string; icon: React.ReactNode; title: string; text: string }) {
   return <div className="evidence-step"><span className="evidence-number mono">{number}</span><div><h2>{icon}{title}</h2><p>{text}</p></div></div>;
 }

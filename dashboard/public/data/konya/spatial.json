@@ -1,0 +1,148 @@
+{
+  "statistics": {
+    "reference_population": "NDVI-screened, quality-valid vegetation with finite NDVI, NDRE and NDMI",
+    "risk_class_counts": {
+      "High": 22832,
+      "Low": 28470,
+      "Moderate": 24985,
+      "Very High": 21203
+    },
+    "risk_class_percentages": {
+      "High": 23.4198379320956,
+      "Low": 29.20299517899272,
+      "Moderate": 25.628269566109346,
+      "Very High": 21.74889732280234
+    },
+    "risk_score": {
+      "count": 97490,
+      "interquartile_range": 50.231829594558995,
+      "max": 99.69650620144034,
+      "mean": 46.56483652720409,
+      "median": 45.01310312791996,
+      "median_absolute_deviation": 25.037327766775796,
+      "min": 0.00042483349194163706,
+      "percentiles": {
+        "p05": 4.07836182429677,
+        "p10": 8.253006374977577,
+        "p25": 21.242314897022247,
+        "p50": 45.01310312791996,
+        "p75": 71.47414449158124,
+        "p90": 87.30722276483041,
+        "p95": 92.55135728121633
+      },
+      "standard_deviation": 28.667043103587364
+    },
+    "statistics_conventions": "Population standard deviation; unscaled MAD; linear interpolated quantiles",
+    "vegetation_indices": {
+      "NDMI": {
+        "count": 97490,
+        "interquartile_range": 0.2905015523835913,
+        "max": 0.64667357490094,
+        "mean": 0.234053094171058,
+        "median": 0.20976175784433665,
+        "median_absolute_deviation": 0.13833966990982066,
+        "min": -0.30805612954909406,
+        "percentiles": {
+          "p05": 0.013473474251426903,
+          "p10": 0.03728964602842032,
+          "p25": 0.08754621565043458,
+          "p50": 0.20976175784433665,
+          "p75": 0.3780477680340259,
+          "p90": 0.4700824122538877,
+          "p95": 0.5073758108217421
+        },
+        "standard_deviation": 0.16540317740684082
+      },
+      "NDRE": {
+        "count": 97490,
+        "interquartile_range": 0.2668094747870607,
+        "max": 0.7620056871427668,
+        "mean": 0.3838131579888728,
+        "median": 0.34859331936301075,
+        "median_absolute_deviation": 0.11942490775406413,
+        "min": 0.15079152406117818,
+        "percentiles": {
+          "p05": 0.20011497296303266,
+          "p10": 0.2103638117233732,
+          "p25": 0.2452786602157771,
+          "p50": 0.34859331936301075,
+          "p75": 0.5120881350028378,
+          "p90": 0.6175887299507197,
+          "p95": 0.654836266641528
+        },
+        "standard_deviation": 0.1525664473098114
+      },
+      "NDVI": {
+        "count": 97490,
+        "interquartile_range": 0.32985100552730773,
+        "max": 0.922746088274474,
+        "mean": 0.5392621029473972,
+        "median": 0.5094735352119605,
+        "median_absolute_deviation": 0.15595793928871723,
+        "min": 0.3000026051207726,
+        "percentiles": {
+          "p05": 0.31098802110999957,
+          "p10": 0.323193515082513,
+          "p25": 0.3705774703808825,
+          "p50": 0.5094735352119605,
+          "p75": 0.7004284759081902,
+          "p90": 0.8024024144210335,
+          "p95": 0.8360786495433554
+        },
+        "standard_deviation": 0.17903525679422475
+      }
+    }
+  },
+  "summary": {
+    "classified_vegetation_pixels": 97490,
+    "limitations": [
+      "Spectral risk/proxy only: neither ground-truth-confirmed water stress nor a drought diagnosis; scores are not probabilities.",
+      "A single scene provides no temporal anomaly or seasonal baseline. A uniformly wet or dry scene can still have relative ranks; class percentages are not stress prevalence.",
+      "The NDVI threshold is a configurable, uncalibrated PoC screen, not a crop classifier or guaranteed separation of vegetation, soil, and water.",
+      "Sparse, senescent, harvested, or severely affected vegetation may be excluded. Excluded pixels are unassessed, not low risk.",
+      "Crop type, phenology, canopy density, soil background, shadows, mixed pixels and residual atmospheric effects can confound these indices.",
+      "NDVI, NDRE, and NDMI share NIR and are correlated; supporting terms are not independent confirmation of water stress.",
+      "Ranks and score modifiers are uncalibrated design choices, without ground-truth accuracy, confidence estimates, disease labels or irrigation prescriptions.",
+      "Scene-wide ranks mix vegetation types and fields; changing the vegetation threshold changes the reference population and scores.",
+      "The 400-1700 nm restriction is a compatibility window, not a simulation of Satellite 813 spectral response or resolution.",
+      "Future ground sensors and temporal Sentinel-2 evidence will be needed to increase confidence; neither is used in Phase 2."
+    ],
+    "methodology": {
+      "boundary_note": "Requested 0-24/25-49/50-74/75-100 classes expressed as continuous intervals; no rounding before classification.",
+      "calibration": "Threshold and supporting coefficients are unvalidated PoC design choices, not fitted weights or disease thresholds.",
+      "condition_categories": {
+        "lower quarter": "P < 25",
+        "middle half": "25 <= P < 75",
+        "upper quarter": "P >= 75"
+      },
+      "formula": "risk = (100 - P_NDMI) * (0.8 + 0.1*(1 - P_NDVI/100) + 0.1*(1 - P_NDRE/100))",
+      "interpretation": "Lower NDMI rank drives risk. Lower NDVI/NDRE ranks strengthen supporting evidence, without adding an independent stress term.",
+      "name": "Scene-relative spectral moisture-stress risk, PoC v1",
+      "percentile_definition": "P_X = 100 * (count(X < x) + 0.5 * count(X == x)) / N; ties share midranks",
+      "reference_population": "NDVI-screened, quality-valid vegetation with finite NDVI, NDRE and NDMI",
+      "risk_classes": {
+        "High": "50 <= score < 75",
+        "Low": "0 <= score < 25",
+        "Moderate": "25 <= score < 50",
+        "Very High": "75 <= score <= 100"
+      },
+      "score_is_probability": false,
+      "score_range": [
+        0,
+        100
+      ],
+      "support_factor_range": [
+        0.8,
+        1.0
+      ]
+    },
+    "risk_class_percentage_denominator": "classified_vegetation_pixels",
+    "risk_class_percentages": {
+      "High": 23.4198379320956,
+      "Low": 29.20299517899272,
+      "Moderate": 25.628269566109346,
+      "Very High": 21.74889732280234
+    },
+    "vegetation_threshold": 0.3
+  }
+}
