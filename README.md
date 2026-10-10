@@ -2,7 +2,7 @@
 
 Proof of Concept for the Arab Youth Space Hackathon 2026, Challenge 813.
 
-## Phase 1 – Tanager Hyperspectral Pipeline
+## STAGE 1 – Tanager Hyperspectral Pipeline
 
 Processes real Planet Tanager data following the official
 [agriculture notebook](references/01_agriculture_crop_intelligence.ipynb) and
@@ -99,19 +99,19 @@ Scientific interpretation:
 Data attribution: © Planet Labs PBC, CC-BY-4.0, as recorded in the official
 scene metadata. Reference notebooks by Dr. Vincent Markiet / Space42.
 
-## Phase 2 – Spectral Moisture Stress Risk
+## STAGE 2 – Spectral Moisture Stress Risk
 
-Run after Phase 1, from the repository root:
+Run after STAGE 1, from the repository root:
 
 ```powershell
 .\.venv\Scripts\python.exe run_stress.py
 ```
 
-Phase 2 runs offline on the **existing real scene** identified by
+STAGE 2 runs offline on the **existing real scene** identified by
 `outputs/tanager/scene_summary.json`. It verifies the saved STAC snapshot and
 HDF5 checksum, reads raw data from `AGRIPULSE_DATA_DIR` (Windows default:
-`C:\AgriPulseData\tanager`), and reuses Phase 1's wavelength selection, masks,
-reflectance reader, and index formulas. It does not modify Phase 1 outputs or
+`C:\AgriPulseData\tanager`), and reuses STAGE 1's wavelength selection, masks,
+reflectance reader, and index formulas. It does not modify STAGE 1 outputs or
 download another scene. No additional dependencies are required.
 
 The initial vegetation screen is **quality-valid NDVI ≥ 0.30**. This is a
@@ -194,17 +194,17 @@ are correlated, so their agreement is not independent confirmation. The
 dependence of index–moisture relationships on land cover and soil is illustrated
 by [Gu et al. (2008)](https://pubs.usgs.gov/publication/70032687).
 **Stage 3 below adds temporal Sentinel-2 evidence to help assess this spectral
-proxy; ground sensors remain future work.** Phase 2 itself uses no temporal
+proxy; ground sensors remain future work.** STAGE 2 itself uses no temporal
 evidence or ground-truth labels and introduces no supervised model, dashboard,
 API or IoT component.
 
-Run the tests after generating the real Phase 1 and Phase 2 outputs:
+Run the tests after generating the real STAGE 1 and STAGE 2 outputs:
 
 ```powershell
 .\.venv\Scripts\python.exe -m unittest discover -s tests -v
 ```
 
-Tests use the actual local Tanager scene, check the Phase 1 refactor, score bounds,
+Tests use the actual local Tanager scene, check the STAGE 1 refactor, score bounds,
 exclusions, invalid evidence, finite statistics, class percentages, ties,
 configurable screening and reconstruction of scores from saved pixel evidence.
 
