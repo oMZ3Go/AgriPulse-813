@@ -243,9 +243,9 @@ observations in representative hotspot and comparison areas.
 The validated Stage A checkpoint has **146/146 Python tests**, **51/51 frontend
 end-to-end tests**, TypeScript typechecking, a Next.js production build and
 fresh-kernel offline notebook execution passing. These checks establish software
-behavior and reproducibility, not diagnostic accuracy. See the [Stage A
-report](SUBMISSION_STAGE_A_REPORT.md) and [Stage B documentation audit and
-rerun results](SUBMISSION_STAGE_B_REPORT.md).
+behavior and reproducibility, not diagnostic accuracy. See the [Python regression
+tests](tests/), [submission reproducibility tests](tests/test_submission.py) and
+[dashboard verification commands](dashboard/README.md#verification).
 
 The full Python regression suite requires the maintainer's existing real raw data
 and full-scene outputs. It is not a prerequisite for the compact reviewer path:
@@ -278,33 +278,38 @@ and full-scene outputs. It is not a prerequisite for the compact reviewer path:
 
 ## Team, licence and attribution
 
-**Hadi Alhamesh — Team Leader**
+### Team
 
-Scientific pipeline development, Earth-observation data processing,
-system architecture, project concept and technical implementation.
+**Beyond The Limit — Syria**
 
-**Hussam Kharof — UI/UX & Quality Assurance**
+| Member | Role |
+| --- | --- |
+| **Hadi Alhamesh** | **Team Leader** — Scientific pipeline development, Earth-observation data processing, system architecture, project concept, technical implementation, and overall project coordination. |
+| **Hussam Kharof** | **UI/UX & Quality Assurance** — UI/UX review, usability testing, project validation, research, and quality assurance. |
 
-UI/UX review, usability testing, project validation,
-research and quality assurance.
+### Project software licence
 
 **Project software licence: not yet selected by the project owners.** No established project
 licence or `LICENSE` file was found. Third-party data and library licences do not
 license the team's original software; no software licence has been selected here.
+
+### Data and third-party attribution
 
 | Material | Attribution / locally verified status |
 | --- | --- |
 | Tanager data and derived sample | © Planet Labs PBC, **CC-BY-4.0**. The sample is a selected subset; derived indices, rankings and figures are AgriPulse processing. See [provenance](data/sample_input/provenance.json) |
 | Sentinel-2 derived time series | Copernicus / ESA via Microsoft Planetary Computer. The saved catalog identifies the Sentinel Data Legal Notice; its exact terms and required attribution wording need confirmation from the owner/source documentation |
 | Reference notebooks | **Dr. Vincent Markiet / Space42**, credited in the [EO quickstart](references/00_EO_data_quickstart_notebook.ipynb) and [agriculture notebook](references/01_agriculture_crop_intelligence.ipynb). The data licence does not establish a separate notebook-code licence; that permission remains unverified locally |
+| Hackathon webinar reference | The supplied [webinar PDF](references/1787141941745-hackathon_webinar_talk_en.pdf) credits National Space Academy - UAE Space Agency - Space42 in its author metadata. Separate redistribution terms have not been verified locally; this is reference material, not the team's presentation |
 | Globe geography | Natural Earth 1:110m data, public domain as recorded in the existing [geography attribution](dashboard/public/globe/ATTRIBUTION.md); supplied through `world-atlas` (ISC package licence) |
 | Detailed map tiles | © OpenStreetMap contributors, with copyright attribution already visible in the map; geographic context only |
 | Fonts and icons | Geist: Vercel / basement.studio, SIL Open Font License 1.1. Lucide: Lucide Icons and Contributors, ISC, with MIT notices for Feather-derived icons in the installed package |
 | External libraries | Python dependencies in [requirements.txt](requirements.txt); frontend dependencies and recorded licences in [package-lock.json](dashboard/package-lock.json). Their own licences and bundled notices remain applicable; they are not covered by a project-wide licence |
 
-The [Stage B report](SUBMISSION_STAGE_B_REPORT.md#e-data-licence-and-attribution-audit)
-records local evidence, library notices and unresolved permission details without
-inventing data or software licences.
+The [sample source guide](data/sample_input/README.md#source-and-attribution) and
+[committed scene provenance](dashboard/public/data/konya/provenance.json) retain
+the source evidence. The unresolved permission details above remain explicit;
+no data or dependency licence is applied to the project's original software.
 
 ## Repository navigation
 
@@ -314,9 +319,9 @@ inventing data or software licences.
 | Inspect real sample inputs | [Sample guide](data/sample_input/README.md) · [manifest](data/sample_input/provenance.json) |
 | Inspect example outputs | [Figure](results/example_output.png) · [JSON summary](results/example_summary.json) |
 | Inspect the full-scene decision | [Product contract](examples/product_contract_konya.json) · [fusion evidence](dashboard/public/data/konya/fusion.json) |
-| Run the existing interface | [Dashboard guide](dashboard/README.md) · [Stage 5C report](dashboard/STAGE_5C_REPORT.md) |
+| Run the existing interface | [Dashboard guide](dashboard/README.md) · [verification commands](dashboard/README.md#verification) |
 | Review implementation and checks | [Scientific modules](src/agripulse/) · [tests](tests/) |
-| Review submission verification | [Stage A report](SUBMISSION_STAGE_A_REPORT.md) · [Stage B report](SUBMISSION_STAGE_B_REPORT.md) |
+| Review reproducibility checks | [Submission tests](tests/test_submission.py) · [dashboard export tests](tests/test_dashboard_export.py) |
 
 ## Technical reference and stage history
 
@@ -1169,8 +1174,8 @@ Stage 5B. Stage 5A added no API, authentication, database, IoT, ML, or irrigatio
 
 Stage 5B evolves the Stage 5A interface described above. Its former placeholders
 now display the real validated Konya package; the scientific stages remain
-unchanged. See the [dashboard guide](dashboard/README.md) and
-[delivery report](dashboard/STAGE_5B_REPORT.md).
+unchanged. See the [dashboard guide](dashboard/README.md) for current product
+behavior and local run instructions.
 
 The three independent use cases are **Explore Earth**, **Verify My Field** and
 **Smart Farm**. Each supports **Simple / Expert** presentation. Simple shows
@@ -1232,6 +1237,6 @@ assessment. No backend, database, cloud persistence or scientific processing
 is added. Simple View emphasizes the next action; sticky navigation, bounded
 globe zoom and EN/AR controls with RTL support improve the existing interface.
 
-See the [Stage 5C report](dashboard/STAGE_5C_REPORT.md) and
-[local run guide](dashboard/README.md). Stages 1–4.7 remain scientifically
+See the [dashboard workflow guide](dashboard/README.md#stage-5c-review) and
+[local run instructions](dashboard/README.md#run-locally). Stages 1–4.7 remain scientifically
 unchanged. This stage does not include deployment, a commit or a push.

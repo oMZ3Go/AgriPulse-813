@@ -231,8 +231,9 @@ Ground Observation persistence, supervised ML, automatic irrigation, cloud
 deployment or global Sentinel pipeline. Point/polygon AOIs, satellite basemaps
 and observation assimilation remain future work. Stages 1–4.7 remain unchanged.
 
-See [the Stage 5B delivery report](STAGE_5B_REPORT.md) for the change inventory,
-verification results and review notes.
+See [Verification](#verification) for reproducible checks and
+[the root project guide](../README.md#results-validation-and-limitations) for
+the validated result and scientific limitations.
 
 ## Stage 5C review
 
@@ -270,5 +271,5 @@ and main scientific cautions. Directional controls and layout adapt to RTL;
 coordinates, scientific codes and original figures remain readable/unmirrored.
 Advanced artifact prose, figure labels and some country names remain English.
 
-See [the Stage 5C delivery report](STAGE_5C_REPORT.md) for exact changes, test
-results, limitations and manual review commands. No commit, push or deployment.
+Use the [local run instructions](#run-locally) to open the interface and the
+[verification commands](#verification) to check its behavior.

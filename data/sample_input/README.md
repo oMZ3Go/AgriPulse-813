@@ -23,8 +23,8 @@ are not claimed to equal the full-scene results.
   The Tanager CC-BY-4.0 statement above does not establish a Sentinel licence.
 - Reference notebooks: Dr. Vincent Markiet / Space42, as credited in both original
   notebooks. A separate licence for their code has not been verified locally.
-  See the [licence and attribution audit](../../SUBMISSION_STAGE_B_REPORT.md#e-data-licence-and-attribution-audit)
-  for the remaining source-permission checks.
+  See the [public licence and attribution section](../../README.md#data-and-third-party-attribution)
+  for the remaining source-permission details.
 
 The complete raw Tanager asset is **902,991,290 bytes** (approximately 903 MB) and
 is excluded to keep the repository compact. No raw Sentinel cache, restricted
