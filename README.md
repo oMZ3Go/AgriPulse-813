@@ -1,71 +1,330 @@
 # AgriPulse-813
 
-Proof of Concept for the Arab Youth Space Hackathon 2026, Challenge 813.
+From spectral signals to grounded decisions.
 
-## Submission: reproduce the compact PoC offline
+**Team:** Beyond The Limit<br>
+**Country:** Syria<br>
+**Theme:** Precision Agriculture & Crop Intelligence
 
-**Beyond The Limit · Syria · Precision Agriculture & Crop Intelligence**
+AgriPulse-813 is an agricultural decision-support Proof of Concept (PoC) combining
+hyperspectral Earth-observation (EO) evidence, Sentinel-2 temporal evidence,
+scene-relative spectral screening, experimental unsupervised spectral anomaly
+analysis and explicit evidence fusion. It identifies areas that warrant closer
+inspection before intervention.
 
-*From spectral signals to grounded decisions.*
+**Current validated demo:** Konya / Çumra, Türkiye.<br>
+**Target future deployment:** Syria and the wider Arab region.
+The current scene does not validate deployment in Syria.
 
-Start with [`notebooks/AgriPulse_813_PoC.ipynb`](notebooks/AgriPulse_813_PoC.ipynb).
-It uses compact **real Konya measurements** included in the repository and generates
-[`results/example_output.png`](results/example_output.png) and
-[`results/example_summary.json`](results/example_summary.json). The executed notebook
-already contains visible outputs and English scientific narration.
+Prepared for the Arab Youth Space Hackathon 2026, Challenge 813.
+Reviewer shortcuts: [installation](#installation) · [run the notebook](#how-to-run) ·
+[example output](#example-input-and-output) · [results and limitations](#results-validation-and-limitations).
 
-After cloning, run these commands from the repository root (tested on Python **3.14.0**):
+## Business use case
+
+Farmers, agronomists, agricultural organizations and agricultural monitoring teams
+need to decide **where to inspect first, and whether the current evidence is strong
+enough to justify an intervention**. AgriPulse-813 makes the available evidence,
+missing observations and recommended next action explicit, helping users prioritize
+field visits without treating a satellite signal as a diagnosis.
+
+The product exposes three workflows, each with Simple and Expert presentations:
+
+| Workflow | User purpose | Current PoC behavior |
+| --- | --- | --- |
+| `EXPLORE_EARTH` | Explore agricultural areas and prioritize inspection | Geographic selection and the saved validated Konya assessment; custom areas remain unprocessed |
+| `VERIFY_MY_FIELD` | Review EO evidence alongside a field observation | Local observation form and JSON export; self-reported observations do not update the saved decision |
+| `SMART_FARM` | Review EO evidence with future site monitoring | Saved EO assessment and a future sensor pathway; Internet of Things (IoT) is not connected |
+
+Global live EO processing and automated irrigation control are not implemented.
+**Ground Observation ≠ Ground Truth.** A recorded observation does not by itself
+establish independent scientific validation.
+
+## Problem
+
+Agricultural monitoring must distinguish areas needing attention from conditions
+that justify action. A low spectral index can reflect crop type, growth stage,
+canopy density, soil background or atmospheric effects as well as moisture-related
+conditions. A single image cannot establish the cause or show seasonal change.
+
+The PoC combines spectral detail with temporal context and keeps missing ground
+evidence visible. Its output is an inspection priority and a decision state,
+with intervention blocked until appropriate verification and human review.
+
+## Data used
+
+| Dataset / provider | Role and date | Product / processing | Licence and attribution evidence | Current PoC use |
+| --- | --- | --- | --- | --- |
+| **Tanager / Planet Labs PBC** | Single hyperspectral observation, **2025-06-08**, Konya / Çumra, Türkiye | Orthorectified surface reflectance, `ortho_sr_hdf5`; **426 source bands**, **260** in the 400–1700 nm compatibility window | **© Planet Labs PBC, CC-BY-4.0**, recorded in [committed scene provenance](dashboard/public/data/konya/provenance.json) and the reference agriculture notebook | Full-scene spectral evidence; compact subset of 2,048 real quality-valid pixels at **240 Stage 4.6 retained bands** after atmospheric-caution exclusions |
+| **Sentinel-2 / Copernicus and ESA**, accessed through Microsoft Planetary Computer | Seasonal temporal context; query **2025-04-01–2025-07-31**, retained dates **2025-04-07–2025-07-31** | `sentinel-2-l2a`, Level-2A bottom-of-atmosphere reflectance; daily vegetation index summaries | Copernicus / ESA via Microsoft Planetary Computer; the locally saved catalog links the **Sentinel Data Legal Notice**. Exact terms are not stored locally and remain an attribution-audit follow-up | **44** retained real daily observations: **19** acquisition-time eligible and **25** later observations used only retrospectively |
+
+Scene ID: `20250608_091605_90_4001`. The [sample manifest](data/sample_input/provenance.json)
+records source hashes, selection, wavelengths and cutoff semantics; the
+[sample guide](data/sample_input/README.md) explains the arrays and CSV fields.
+Raw scenes are not required for the reviewer notebook.
+
+**Tanager is a proxy for the hackathon's hyperspectral use case, not a simulation
+of Satellite 813.** Sensor response functions, calibration and spatial properties
+differ. Restricting wavelengths to 400–1700 nm does not reproduce another sensor.
+
+The decision cutoff is **2025-06-09T08:35:59.024Z**. Every source acquisition in a
+daily mosaic must satisfy that cutoff. Later June/July evidence cannot justify
+the June decision. This is an acquisition-time-gated retrospective reconstruction;
+historical processing, publication and operational availability are not established.
+
+## Technical approach
+
+The evidence workflow proceeds as follows; detailed stage methods are retained below.
 
 ```text
-python -m venv .venv
+Real EO inputs
+  ↓
+Tanager spectral preprocessing and quality masks
+  ↓
+NDVI / NDRE / NDMI
+  ↓
+Scene-relative spectral screening
+  ↓
+Sentinel-2 temporal evidence
+  ↓
+Hyperspectral descriptive evidence
+  ↓
+Experimental anomaly ML (complementary only)
+  ↓
+Evidence fusion / product contract
+  ↓
+Decision state
+  ↓
+Ground verification before intervention
 ```
 
-Activate it on Windows PowerShell with `.\.venv\Scripts\Activate.ps1`, or on
-Linux/macOS with `source .venv/bin/activate`, then run:
+1. **Prepare spectral evidence.** Verify source lineage, apply quality masks and
+   select measured band centers. Calculate the Normalized Difference Vegetation
+   Index (NDVI), Normalized Difference Red Edge Index (NDRE) and Normalized
+   Difference Moisture Index (NDMI).
+2. **Rank relative concerns.** Stage 2 screens vegetation and uses NDMI as the main
+   driver, with NDVI and NDRE as supporting modifiers. Its score is not a
+   probability; Low through Very High are scene-relative screening categories,
+   not drought prevalence or disease classes.
+3. **Add temporal and descriptive context.** Sentinel-2 supplies cutoff-eligible
+   trends and a short seasonal comparison. Hyperspectral profiles show spectral
+   structure beyond the three indices; correlated signals are not independent
+   validation.
+4. **Describe unusual spectra.** Experimental machine learning (ML) uses
+   `StandardScaler → PCA → IsolationForest`, with `random_state = 813`.
+   Principal component analysis (PCA) reduces the spectral representation before
+   anomaly scoring. Scores describe unusual vegetation spectra relative to the
+   fitting population, not drought, disease, probability, calibrated confidence,
+   ground truth or independent validation of Stage 2.
+5. **Expose the evidence and decision.** Stage 4 applies explicit categorical
+   fusion rules; Stage 4.7 carries the decision, evidence availability, provenance,
+   limitations and next action in a product contract. Descriptive hyperspectral
+   and ML layers enrich that contract without changing the Stage 4 decision.
+
+**More evidence means a richer evidence state, not automatically higher accuracy
+or confidence.** The compact notebook reuses representative calculations and loads
+the validated full-scene decision separately; it does not rerun every full-scene stage.
+
+## Installation
+
+**Verified environment:** CPython **3.14.0**, Windows x86-64 / PowerShell.
+Other Python versions and Linux/macOS have not been verified for this submission.
+Use the existing pinned [requirements.txt](requirements.txt); installation requires
+package access. No GPU is required.
+
+Clone the repository, then run from its root with Python 3.14.0 available as `python`:
+
+```powershell
+git clone https://github.com/oMZ3Go/AgriPulse-813.git
+Set-Location AgriPulse-813
+python --version
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+```
+
+If you already have a checkout, start at `python --version` from the repository
+root. Activate the environment for the short run command:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+If PowerShell blocks activation, use `.\.venv\Scripts\python.exe` in place of
+`python` in the commands below; no execution-policy change is needed.
+With the environment activated, the equivalent installation command is
+`python -m pip install -r requirements.txt`.
+
+## How to run
+
+From the repository root, with the installed environment selected:
 
 ```text
-python -m pip install -r requirements.txt
 python scripts/execute_submission_notebook.py
 ```
 
-The runner executes all cells in a fresh Jupyter kernel using the same Python
-environment and saves the notebook outputs. Dependency installation needs package
-access; **notebook execution is offline**. No external credentials, satellite
-downloads, full raw HDF5, dashboard server, Node.js, GPU or raw-data environment
-variable is required. Standard Jupyter/VS Code notebook tools can also run every
-cell from the repository root or `notebooks/` with this environment selected.
-For an optional HTML rendering, use
-`python -m nbconvert --to html notebooks/AgriPulse_813_PoC.ipynb --output-dir outputs/submission_verification`.
+This starts a **fresh Jupyter kernel** using the runner's Python interpreter,
+executes [notebooks/AgriPulse_813_PoC.ipynb](notebooks/AgriPulse_813_PoC.ipynb), saves
+its visible outputs and regenerates:
 
-The Tanager input contains **2,048 real pixels × 240 spectral bands** (about 1.77 MB),
-including **584 vegetation spectra** for the original unsupervised ML function.
-The Sentinel CSV retains **44 real observations**: **19** eligible at the June 9
-acquisition cutoff and **25** later retrospective observations. Later June/July
-data do not justify the June decision. Acquisition-time eligibility does not
-establish operational availability in 2025.
+- [results/example_output.png](results/example_output.png)
+- [results/example_summary.json](results/example_summary.json)
 
-**Compact sample calculations reproduce the workflow, not every full-scene
-statistic.** Sample quantiles and anomaly scores can differ. The notebook separately
-loads the existing validated full-scene contract: **EO_ENHANCED**, relative spectral
-hotspots, neutral/mixed temporal evidence, unavailable ground evidence, and
-**GROUND_VERIFICATION_REQUIRED** with **automation_allowed: false**.
-Experimental spectral anomaly ML does not change this decision. These are decision
-support outputs, not drought probabilities, disease diagnoses, crop-failure
-predictions, calibrated confidence or ground truth.
+Execution uses committed compact real inputs and the saved full-scene evidence
+package. It needs **no raw HDF5, credentials, satellite download or GPU**, and runs
+**offline after dependencies are installed**. It also needs no Node.js, dashboard
+server or raw-data environment configuration. External network and raw-scene
+access are blocked by the notebook's execution guard.
 
-![Compact real-data workflow and separately identified full-scene decision](results/example_output.png)
+Allow **several seconds to tens of seconds on the verified development machine**:
+recorded fresh-kernel runs took 4.207 seconds in Stage A and 15.846 seconds in
+Stage B. These measurements are not a universal runtime claim.
+Standard Jupyter or VS Code notebook tools can also execute all cells in order
+from the repository root or `notebooks/`, with the same environment selected.
 
-See [sample provenance and schema](data/sample_input/README.md) and the
-[Submission Stage A verification report](SUBMISSION_STAGE_A_REPORT.md).
-The sample exporter is maintainer-only and requires the original local data;
-evaluators need only the notebook command above. Scientific Stages 1–4.7 and the
-Stage 5C frontend remain unchanged. The full-data workflows below are separate
-from this compact submission route.
+For optional HTML rendering:
 
-Team: **Hadi Alhamesh**, Team Leader — scientific pipeline development,
-Earth-observation processing, system architecture, concept and technical
-implementation. **Hussam Kharof**, UI/UX & Quality Assurance — UI/UX review,
-usability testing, project validation, research and quality assurance.
+```text
+python -m nbconvert --to html notebooks/AgriPulse_813_PoC.ipynb --output-dir outputs/submission_verification
+```
+
+The optional [dashboard run guide](dashboard/README.md#run-locally) covers the
+existing interactive product. Detailed map tiles need internet access; the
+reviewer notebook does not. Full-scene downloads and maintainer exporters are
+separate workflows described in the technical reference below.
+
+## Example input and output
+
+| Scope | Included material | What it reproduces |
+| --- | --- | --- |
+| Compact Tanager sample | [tanager_sample.npz](data/sample_input/tanager_sample.npz): **2,048 real quality-valid source pixels × 240 retained bands**, **PCG64 seed 813**, approximately 1.77 MB; **584 real vegetation / ML-eligible spectra** | Representative indices, within-sample screening and experimental anomaly calculations |
+| Sentinel temporal input | [sentinel_timeseries_sample.csv](data/sample_input/sentinel_timeseries_sample.csv): **44 retained real daily observations**, with 19 eligible / 25 retrospective flags | Temporal context and cutoff-eligible trend calculations |
+| Validated full-scene result | [Stage 4.7 contract](examples/product_contract_konya.json) and [committed Konya evidence](dashboard/public/data/konya/) | The existing authoritative product decision, loaded separately from sample calculations |
+
+**The Tanager pixels are noncontiguous.** Their array order is not a field map.
+The compact sample reproduces representative calculations, **not all full-scene
+statistics, quantiles, spatial maps or anomaly scores**. Its 584 spectra must not
+be confused with the full-scene vegetation population. See the [sample schema
+and provenance](data/sample_input/README.md).
+
+![Compact real-data calculations and separately loaded validated full-scene decision](results/example_output.png)
+
+*Panels A, B and D show sample distributions, relative screening and experimental
+anomaly scores. Panel C separates eligible Sentinel observations from later
+retrospective context; shading is spatial P25–P75, not a confidence interval.
+The footer reports the separately loaded full-scene decision. These sample plots
+are not spatial field maps.*
+
+Open the [full-size figure](results/example_output.png) or the
+[structured example summary](results/example_summary.json). The JSON keeps
+`compact_sample_calculations` and `validated_full_scene_result` in separate objects.
+
+## Results, validation and limitations
+
+### Validated full-scene result
+
+| Field | Result |
+| --- | --- |
+| Analysis level | `EO_ENHANCED` |
+| Spectral evidence | `RELATIVE_HOTSPOTS_PRESENT` |
+| Temporal evidence | `NEUTRAL_OR_MIXED` |
+| Ground evidence | `UNAVAILABLE` |
+| Decision | **`GROUND_VERIFICATION_REQUIRED`** |
+| Automatic intervention | **NOT ALLOWED** (`automation_allowed: false`) |
+| Experimental ML | Complementary only; does not change the decision |
+
+Relative areas of concern exist, but temporal evidence does not confirm a strong
+broad decline, and site-specific ground evidence is absent. Inspection and ground
+verification are therefore required before intervention. Review hotspots against
+field boundaries and obtain quality-checked, site-calibrated soil-moisture
+observations in representative hotspot and comparison areas.
+
+### Validation
+
+The validated Stage A checkpoint has **146/146 Python tests**, **51/51 frontend
+end-to-end tests**, TypeScript typechecking, a Next.js production build and
+fresh-kernel offline notebook execution passing. These checks establish software
+behavior and reproducibility, not diagnostic accuracy. See the [Stage A
+report](SUBMISSION_STAGE_A_REPORT.md) and [Stage B documentation audit and
+rerun results](SUBMISSION_STAGE_B_REPORT.md).
+
+The full Python regression suite requires the maintainer's existing real raw data
+and full-scene outputs. It is not a prerequisite for the compact reviewer path:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
+.\.venv\Scripts\python.exe -m pytest
+```
+
+### Limitations
+
+- One validated Tanager agricultural scene, in **Türkiye, not Syria**; local
+  crop and climate calibration is required for deployment elsewhere.
+- No independent ground-truth dataset and no supervised diagnostic model.
+  Ground Observation is not Ground Truth.
+- ML is exploratory, unsupervised and relative to its spectral population. It
+  does not diagnose drought or disease or independently validate Stage 2.
+- Tanager is a hyperspectral proxy, not a Satellite 813 simulation; sensor
+  response functions, calibration and spatial properties differ.
+- Sentinel coverage and the screened vegetation population vary by date.
+  Regional medians do not validate individual hotspots, and the short seasonal
+  reference is not a climatology.
+- Compact sample results differ from full-scene statistics and spatial maps.
+  Shared spectral proxies, masks, phenology, soil and canopy effects limit causal
+  interpretation. Neutral/mixed temporal evidence does not exclude local stress.
+- No global live EO backend, automated irrigation control or connected IoT.
+  IoT ingestion, persistent field observations and their assimilation are future work.
+- The June decision excludes later observations; historical operational
+  availability is not established by acquisition timestamps.
+
+## Team, licence and attribution
+
+**Hadi Alhamesh — Team Leader**
+
+Scientific pipeline development, Earth-observation data processing,
+system architecture, project concept and technical implementation.
+
+**Hussam Kharof — UI/UX & Quality Assurance**
+
+UI/UX review, usability testing, project validation,
+research and quality assurance.
+
+**Project software licence: not yet selected by the project owners.** No established project
+licence or `LICENSE` file was found. Third-party data and library licences do not
+license the team's original software; no software licence has been selected here.
+
+| Material | Attribution / locally verified status |
+| --- | --- |
+| Tanager data and derived sample | © Planet Labs PBC, **CC-BY-4.0**. The sample is a selected subset; derived indices, rankings and figures are AgriPulse processing. See [provenance](data/sample_input/provenance.json) |
+| Sentinel-2 derived time series | Copernicus / ESA via Microsoft Planetary Computer. The saved catalog identifies the Sentinel Data Legal Notice; its exact terms and required attribution wording need confirmation from the owner/source documentation |
+| Reference notebooks | **Dr. Vincent Markiet / Space42**, credited in the [EO quickstart](references/00_EO_data_quickstart_notebook.ipynb) and [agriculture notebook](references/01_agriculture_crop_intelligence.ipynb). The data licence does not establish a separate notebook-code licence; that permission remains unverified locally |
+| Globe geography | Natural Earth 1:110m data, public domain as recorded in the existing [geography attribution](dashboard/public/globe/ATTRIBUTION.md); supplied through `world-atlas` (ISC package licence) |
+| Detailed map tiles | © OpenStreetMap contributors, with copyright attribution already visible in the map; geographic context only |
+| Fonts and icons | Geist: Vercel / basement.studio, SIL Open Font License 1.1. Lucide: Lucide Icons and Contributors, ISC, with MIT notices for Feather-derived icons in the installed package |
+| External libraries | Python dependencies in [requirements.txt](requirements.txt); frontend dependencies and recorded licences in [package-lock.json](dashboard/package-lock.json). Their own licences and bundled notices remain applicable; they are not covered by a project-wide licence |
+
+The [Stage B report](SUBMISSION_STAGE_B_REPORT.md#e-data-licence-and-attribution-audit)
+records local evidence, library notices and unresolved permission details without
+inventing data or software licences.
+
+## Repository navigation
+
+| Reviewer task | Entry point |
+| --- | --- |
+| Read or execute the PoC | [Submission notebook](notebooks/AgriPulse_813_PoC.ipynb) · [fresh-kernel runner](scripts/execute_submission_notebook.py) |
+| Inspect real sample inputs | [Sample guide](data/sample_input/README.md) · [manifest](data/sample_input/provenance.json) |
+| Inspect example outputs | [Figure](results/example_output.png) · [JSON summary](results/example_summary.json) |
+| Inspect the full-scene decision | [Product contract](examples/product_contract_konya.json) · [fusion evidence](dashboard/public/data/konya/fusion.json) |
+| Run the existing interface | [Dashboard guide](dashboard/README.md) · [Stage 5C report](dashboard/STAGE_5C_REPORT.md) |
+| Review implementation and checks | [Scientific modules](src/agripulse/) · [tests](tests/) |
+| Review submission verification | [Stage A report](SUBMISSION_STAGE_A_REPORT.md) · [Stage B report](SUBMISSION_STAGE_B_REPORT.md) |
+
+## Technical reference and stage history
+
+The sections below retain full-scene methods, maintainer commands and development
+history. **They are not additional steps for the compact reviewer notebook.**
+Full-scene processing requires original data or network downloads as described
+per stage. References to work deferred by an earlier stage describe that stage's
+scope; **Stage 5C is the current frontend** and displays the committed Konya package.
 
 ## STAGE 1 – Tanager Hyperspectral Pipeline
 
@@ -74,11 +333,10 @@ Processes real Planet Tanager data following the official
 [EO quickstart](references/00_EO_data_quickstart_notebook.ipynb). References remain
 unchanged; this phase contains satellite processing only.
 
-From the repository root, create the local environment and install dependencies
-(Python 3.12 or newer; tested with Python 3.14):
+Use the verified Python 3.14.0 environment from [Installation](#installation).
+From the repository root, install the pinned dependencies if needed:
 
 ```powershell
-python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 ```
 
@@ -88,12 +346,13 @@ Run the complete pipeline with this one command:
 .\.venv\Scripts\python.exe run_tanager.py
 ```
 
-On Windows, raw HDF5 files, partial downloads, checkpoints, and STAC snapshots
-default to **`C:\AgriPulseData\tanager`**, outside the repository and OneDrive.
-To choose the raw-data directory explicitly for this PowerShell session:
+For maintainer full-scene runs, configure an absolute raw-data directory outside
+the repository and synchronized folders. It holds raw HDF5 files, partial
+downloads, checkpoints and SpatioTemporal Asset Catalog (STAC) snapshots.
+To select your own directory for this PowerShell session:
 
 ```powershell
-$env:AGRIPULSE_DATA_DIR = 'C:\AgriPulseData\tanager'
+$env:AGRIPULSE_DATA_DIR = Read-Host 'Absolute path to your Tanager raw-data directory'
 .\.venv\Scripts\python.exe run_tanager.py
 ```
 
@@ -102,7 +361,8 @@ Without this variable, non-Windows systems fall back to `data/raw/tanager/` in
 the repository. Code, Git, the environment, and generated analysis outputs stay
 in the existing workspace.
 
-On Linux/macOS, use `.venv/bin/python` in place of `.\.venv\Scripts\python.exe`.
+On Linux/macOS, the corresponding interpreter path is `.venv/bin/python`;
+those platforms have not been verified for this submission.
 The default is the notebook's first scene, `20250608_091605_90_4001` (Konya,
 Turkey). Append `--help` to list the three allowed notebook scenes or select
 another with `--scene-id 20250331_113403_16_4001`.
@@ -174,8 +434,8 @@ Run after STAGE 1, from the repository root:
 
 STAGE 2 runs offline on the **existing real scene** identified by
 `outputs/tanager/scene_summary.json`. It verifies the saved STAC snapshot and
-HDF5 checksum, reads raw data from `AGRIPULSE_DATA_DIR` (Windows default:
-`C:\AgriPulseData\tanager`), and reuses STAGE 1's wavelength selection, masks,
+HDF5 checksum, reads raw data from the directory selected with
+`AGRIPULSE_DATA_DIR`, and reuses STAGE 1's wavelength selection, masks,
 reflectance reader, and index formulas. It does not modify STAGE 1 outputs or
 download another scene. No additional dependencies are required.
 
@@ -299,11 +559,11 @@ Only native-resolution COG windows intersecting this small area are read. COG
 access transfers intersecting compressed blocks, which can extend slightly beyond
 the requested window; it does not download entire Sentinel tiles. See
 [Rasterio windowed reading](https://rasterio.readthedocs.io/en/latest/topics/windowed-rw.html).
-The Windows cache defaults to **`C:\AgriPulseData\sentinel`**, outside OneDrive.
-Override this separately from `AGRIPULSE_DATA_DIR`:
+Choose a Sentinel cache outside the repository and synchronized folders,
+configured separately from `AGRIPULSE_DATA_DIR`:
 
 ```powershell
-$env:AGRIPULSE_SENTINEL_DATA_DIR = "D:\AgriPulseData\sentinel"
+$env:AGRIPULSE_SENTINEL_DATA_DIR = Read-Host 'Absolute path to your Sentinel cache directory'
 .\.venv\Scripts\python.exe run_sentinel.py
 ```
 
@@ -666,8 +926,8 @@ root with the existing Stage 1 and Stage 2 artifacts and local Tanager data:
 .\.venv\Scripts\python.exe run_ml.py
 ```
 
-The pipeline itself runs **entirely offline**, reusing `AGRIPULSE_DATA_DIR`
-(Windows default `C:\AgriPulseData\tanager`) and scene `20250608_091605_90_4001`.
+The pipeline itself runs **entirely offline**, reusing the directory configured
+with `AGRIPULSE_DATA_DIR` and scene `20250608_091605_90_4001`.
 Missing files, mismatched scenes/lineage, altered HDF5/STAC checksums or inconsistent
 eligibility masks fail loudly. No data downloads or substitute scenes are attempted.
 Previous scientific outputs and the frontend are not modified.
@@ -725,8 +985,9 @@ Generated files in `outputs/ml/` (ignored by Git; replaced on rerun):
 | `anomaly_pixel_evidence.npz` | Lossless float64 scores, eligibility mask, scene ID, fitting pixel indices and retained band indices; about 0.69 MiB |
 
 Load the NPZ with `allow_pickle=False`; scores are NaN outside eligibility, on
-the original image grid. This compact evidence is saved for future integration;
-Stage 5B is not implemented. Measured pipeline runs took **7.34–8.12 seconds**
+the original image grid. Stage 4.6 produces evidence for downstream presentation;
+the current Stage 5C frontend displays the exported summaries and figures.
+Measured pipeline runs took **7.34–8.12 seconds**
 on the development machine (excluding Python imports); a separate offline run
 peaked at **469.68 MiB process working set** on Windows. The retained float32
 spectra occupy **89.13 MiB**; one float64 fitting matrix occupies **36.62 MiB**.
@@ -862,8 +1123,9 @@ This retrospective demo is not evidence of an operational decision made in 2025.
 Future supervised learning requires independently validated ground-truth labels
 from verified field/agronomist observations and calibrated IoT, matched to EO,
 temporal and weather features with a suitable validation protocol. Neither labels
-nor supervised ML, ingestion, weather APIs, downloads, backend or Stage 5B are
-implemented here. Stages 1–4.6 and Stage 5A remain unchanged.
+nor supervised ML, ingestion, weather APIs, downloads or a backend are
+implemented by this contract module. Frontend integration is documented under
+Stages 5B and 5C; the contract does not recompute upstream scientific outputs.
 
 Run contract tests alone, or the complete scientific regression suite:
 
@@ -879,12 +1141,13 @@ serialization, presentation rules, the real Konya artifacts and unchanged prior
 outputs/frontend. Existing real local artifacts are required for integration tests;
 missing data is never downloaded or replaced with synthetic production evidence.
 
-## Stage 5A – Modern UI Shell
+## Stage 5A – Modern UI Shell (historical)
 
-The independent Next.js frontend in [`dashboard/`](dashboard/README.md) introduces
+The initial Next.js frontend in [`dashboard/`](dashboard/README.md) introduced
 the **AgriPulse-813** identity by **Beyond The Limit**, an interactive Earth globe,
 Konya scene selection, and Farmer / Expert workspace shells. **All analysis areas
-are clearly labeled placeholders**; no Stage 1–4.5 output is read by the UI.
+were clearly labeled placeholders** at Stage 5A; the current Stage 5C interface
+displays the real committed Konya evidence, as described below.
 Konya, Turkey is the current validated demo scene. Syria and the Arab region are
 the target deployment context, with no validated regional analysis in this demo.
 
@@ -899,10 +1162,10 @@ npm.cmd run dev
 Open **http://127.0.0.1:3000**. On macOS/Linux, use `npm` instead of `npm.cmd`.
 The frontend uses Next.js, TypeScript, Tailwind CSS, Framer Motion, and
 react-globe.gl. Production run instructions are in the [frontend README](dashboard/README.md).
-Real scientific-output integration and evidence visualizations are deferred to
-Stage 5B. Stage 5A adds no API, authentication, database, IoT, ML, or irrigation controls.
+Real scientific-output integration and evidence visualizations followed in
+Stage 5B. Stage 5A added no API, authentication, database, IoT, ML, or irrigation controls.
 
-## Stage 5B – Real Product Flows and Konya Evidence
+## Stage 5B – Real Product Flows and Konya Evidence (historical)
 
 Stage 5B evolves the Stage 5A interface described above. Its former placeholders
 now display the real validated Konya package; the scientific stages remain
@@ -920,8 +1183,8 @@ A local searchable country list and clickable globe share selection state and
 camera focus. Konya remains the gold validated demo; Syria remains a target
 deployment without validated analysis. **Global location selection does not
 imply validated analysis for every location.** Other countries lead to an honest
-AOI preparation shell; live global processing is not executed. Point, bounding
-box and polygon drawing remain upcoming.
+AOI preparation shell; live global processing is not executed. Stage 5C added
+bounding-box drawing; point and polygon drawing remain future work.
 
 The deterministic presentation exporter reads existing outputs and the unchanged
 Stage 4.7 contract, validates consistency and saved local lineage, and exports
@@ -939,8 +1202,9 @@ The activity panel tracks actual local reads and integrity checks, finishing as
 soon as data are ready. The evidence-availability panel reads the contract:
 Sentinel-2, temporal, hyperspectral and experimental ML are available; weather is
 not checked/not integrated, Ground Observation unavailable and IoT not connected.
-Verify My Field describes a future Ground Observation pathway. Smart Farm
-describes a future calibrated sensor connection; neither fabricates records.
+At Stage 5B, Verify My Field described a future Ground Observation pathway;
+Stage 5C added local form capture and export without changing the assessment.
+Smart Farm describes a future calibrated sensor connection; neither fabricates records.
 
 The saved decision remains **GROUND_VERIFICATION_REQUIRED**, rule D06, with
 **automation_allowed: false** and level **EO_ENHANCED**. Evidence richness is not
@@ -952,7 +1216,7 @@ Run locally using the commands above (`cd dashboard`, `npm.cmd ci`,
 `npm.cmd run dev`), then open **http://127.0.0.1:3000**. Stage 5B adds no live EO
 backend, weather integration, sensor ingestion, Ground Observation persistence,
 supervised learning or intervention automation. No Stage 5C work or deployment
-is included.
+was included in Stage 5B; Stage 5C is described next.
 
 
 ## Stage 5C - Frontend product polish, AOI and Ground Observation

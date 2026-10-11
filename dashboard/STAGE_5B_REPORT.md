@@ -144,7 +144,7 @@ unimplemented. No fake observations or sensor readings were introduced.
 From the project root in PowerShell:
 
 ```powershell
-Set-Location 'C:\Users\moham\OneDrive\Desktop\AgriPulse-813\dashboard'
+Set-Location .\dashboard
 npm.cmd ci
 npm.cmd run dev
 ```

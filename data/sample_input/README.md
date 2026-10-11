@@ -17,7 +17,14 @@ are not claimed to equal the full-scene results.
 - Planet Labs PBC, **CC-BY-4.0**, as recorded in the verified project STAC/Stage 1
   metadata. The sample is a selected subset, not a complete scene.
 - Sentinel-2: Copernicus / ESA, processed through Microsoft Planetary Computer
-  by the existing Stage 3 workflow. Reference notebooks: Dr. Vincent Markiet / Space42.
+  by the existing Stage 3 workflow, using Level-2A reflectance (`sentinel-2-l2a`).
+  The checksum-verified local catalog links the Sentinel Data Legal Notice;
+  its exact terms and required attribution wording are not stored locally.
+  The Tanager CC-BY-4.0 statement above does not establish a Sentinel licence.
+- Reference notebooks: Dr. Vincent Markiet / Space42, as credited in both original
+  notebooks. A separate licence for their code has not been verified locally.
+  See the [licence and attribution audit](../../SUBMISSION_STAGE_B_REPORT.md#e-data-licence-and-attribution-audit)
+  for the remaining source-permission checks.
 
 The complete raw Tanager asset is **902,991,290 bytes** (approximately 903 MB) and
 is excluded to keep the repository compact. No raw Sentinel cache, restricted
