@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { createContext, startTransition, useCallback, useContext, useEffect, useState } from "react";
 import { arabic } from "@/lib/translations";
 
 type Language = "en" | "ar";
@@ -9,14 +9,17 @@ const LanguageContext = createContext({ language: "en" as Language, setLanguage:
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguage] = useState<Language>("en");
   useEffect(() => {
-    try { if (localStorage.getItem("agripulse-language") === "ar") setLanguage("ar"); } catch { /* Storage is optional. */ }
+    // The provider can mount before nested Suspense content hydrates. Let that
+    // content hydrate in English before restoring the persisted language.
+    try { if (localStorage.getItem("agripulse-language") === "ar") startTransition(() => setLanguage("ar")); } catch { /* Storage is optional. */ }
   }, []);
   useEffect(() => {
     document.documentElement.lang = language;
     document.documentElement.dir = language === "ar" ? "rtl" : "ltr";
   }, [language]);
   const choose = useCallback((value: Language) => {
-    setLanguage(value);
+    // Header controls may be interactive while a page boundary is hydrating.
+    startTransition(() => setLanguage(value));
     try { localStorage.setItem("agripulse-language", value); } catch { /* Language still works in memory. */ }
   }, []);
   const t = useCallback((text: string) => language === "ar" ? arabic[text] ?? text : text, [language]);

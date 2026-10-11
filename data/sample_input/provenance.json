@@ -1,0 +1,89 @@
+{
+  "artifacts": {
+    "sentinel_timeseries_sample.csv": {
+      "bytes": 18204,
+      "sha256": "42769ff42ad76f0469376cf44f54bab091e149bb8654b6a3306be457dac30e4a"
+    },
+    "tanager_sample.npz": {
+      "bytes": 1767291,
+      "sha256": "c222b82b6f2a937b3368151853abf06e1e4754a8c992009a0fface1a07e30e50"
+    }
+  },
+  "attribution": "Planet Labs PBC, CC-BY-4.0; Sentinel-2: Copernicus / ESA via Microsoft Planetary Computer. Reference notebooks: Dr. Vincent Markiet / Space42.",
+  "availability_caution": "Acquisition-time eligibility only; historical publication/processing/operational availability is not established.",
+  "bbox": [
+    32.44227196464563,
+    37.51375341016496,
+    32.70580618046614,
+    37.69491765950834
+  ],
+  "decision_as_of": "2025-06-09T08:35:59.024000Z",
+  "decision_time_rows": 19,
+  "exclusions": "Official nodata/cloud/cirrus mask failures excluded before sampling. Retain existing Stage 4.6 usable bands, excluding 1350-1450 nm inclusive (20 bands). ML additionally requires screened vegetation with finite nonnegative non-nodata spectra at every retained band.",
+  "index_band_centers_nm": {
+    "nir": 861.26,
+    "red": 665.87,
+    "red_edge": 705.92,
+    "swir": 1647.6599999999999
+  },
+  "location": "Konya / Çumra, Türkiye",
+  "ml_sample_size": 584,
+  "quality_valid_source_population": 359001,
+  "random_seed": 813,
+  "raw_source_bytes": 902991290,
+  "retrospective_rows": 25,
+  "sample_size": 2048,
+  "scene_id": "20250608_091605_90_4001",
+  "schema_version": "submission-A.1",
+  "scope": "Compact calculations reproduce the workflow, not all full-scene statistics. The validated full-scene decision is loaded separately from the committed product contract and evidence package.",
+  "selection": "Uniform sampling without replacement from sorted quality-valid flat pixel indices, PCG64(813), then sort selected indices. No risk-class stratification.",
+  "sentinel_rows": 44,
+  "source_date": "2025-06-08T09:16:05.903891Z",
+  "sources": {
+    "ml_pixels": {
+      "file": "outputs/ml/anomaly_pixel_evidence.npz",
+      "sha256": "b5621ee4a2c3953396f65d42acb86e16d5fe59fd80e47bd374ace16071559ae3"
+    },
+    "ml_summary": {
+      "file": "outputs/ml/ml_summary.json",
+      "sha256": "8b95bb1978cb713f6846a02c0c3659e10e99d4672a7f33865f1b1a6f95291ea1"
+    },
+    "sentinel_csv": {
+      "file": "outputs/sentinel/sentinel_timeseries.csv",
+      "sha256": "9b9ba896c8b54d90938dd95fb07d7fe5252adb55bea1a481a0501e344644656b"
+    },
+    "sentinel_json": {
+      "file": "outputs/sentinel/sentinel_timeseries.json",
+      "sha256": "a028e224a8b3e39b58c9490513a3c1c91ea413097f7f0932f5ada20b36206a7b"
+    },
+    "source_hdf5": {
+      "file": "20250608_091605_90_4001_ortho_sr_hdf5.h5",
+      "sha256": "f3115eb5eb3fe5355326e81a4041e08f060887f1d4264ed810df19f4de08e53a"
+    },
+    "stac_snapshot": {
+      "file": "20250608_091605_90_4001.json",
+      "sha256": "bb21a02e021eab85e98dab8a62f4fea5e9436560d478548c1fd213acdb0ef8fb"
+    },
+    "stage1_summary": {
+      "file": "outputs/tanager/scene_summary.json",
+      "sha256": "4ec2f3091c615b28da5e4357377c70108e7cbbc910d0ce531789145a56ed5a48"
+    },
+    "stage2_pixels": {
+      "file": "outputs/stress/pixel_evidence.npz",
+      "sha256": "f9fa3a4cfd6524504a343cb11b5909392378e2a3c1dce5003ce05e222395f2c1"
+    },
+    "stage2_summary": {
+      "file": "outputs/stress/stress_summary.json",
+      "sha256": "3903ab859e8304d6664d77432299221ce155c0ed1eb91c9733806d2e001b8809"
+    }
+  },
+  "spatial_interpretation": "Noncontiguous pixel sample. Flat indices identify original pixels; array order is not a spatial map.",
+  "spectra_units": "Physical surface reflectance; unchanged source float32 values, no scaling, smoothing or imputation.",
+  "spectral_band_count": 240,
+  "temporal_rule": "All listed source acquisitions of a daily mosaic must be <= decision_as_of; straddling mosaics excluded in full.",
+  "vegetation_sample_size": 584,
+  "wavelength_range_nm": [
+    401.28999999999996,
+    1697.65
+  ]
+}

@@ -2,6 +2,71 @@
 
 Proof of Concept for the Arab Youth Space Hackathon 2026, Challenge 813.
 
+## Submission: reproduce the compact PoC offline
+
+**Beyond The Limit · Syria · Precision Agriculture & Crop Intelligence**
+
+*From spectral signals to grounded decisions.*
+
+Start with [`notebooks/AgriPulse_813_PoC.ipynb`](notebooks/AgriPulse_813_PoC.ipynb).
+It uses compact **real Konya measurements** included in the repository and generates
+[`results/example_output.png`](results/example_output.png) and
+[`results/example_summary.json`](results/example_summary.json). The executed notebook
+already contains visible outputs and English scientific narration.
+
+After cloning, run these commands from the repository root (tested on Python **3.14.0**):
+
+```text
+python -m venv .venv
+```
+
+Activate it on Windows PowerShell with `.\.venv\Scripts\Activate.ps1`, or on
+Linux/macOS with `source .venv/bin/activate`, then run:
+
+```text
+python -m pip install -r requirements.txt
+python scripts/execute_submission_notebook.py
+```
+
+The runner executes all cells in a fresh Jupyter kernel using the same Python
+environment and saves the notebook outputs. Dependency installation needs package
+access; **notebook execution is offline**. No external credentials, satellite
+downloads, full raw HDF5, dashboard server, Node.js, GPU or raw-data environment
+variable is required. Standard Jupyter/VS Code notebook tools can also run every
+cell from the repository root or `notebooks/` with this environment selected.
+For an optional HTML rendering, use
+`python -m nbconvert --to html notebooks/AgriPulse_813_PoC.ipynb --output-dir outputs/submission_verification`.
+
+The Tanager input contains **2,048 real pixels × 240 spectral bands** (about 1.77 MB),
+including **584 vegetation spectra** for the original unsupervised ML function.
+The Sentinel CSV retains **44 real observations**: **19** eligible at the June 9
+acquisition cutoff and **25** later retrospective observations. Later June/July
+data do not justify the June decision. Acquisition-time eligibility does not
+establish operational availability in 2025.
+
+**Compact sample calculations reproduce the workflow, not every full-scene
+statistic.** Sample quantiles and anomaly scores can differ. The notebook separately
+loads the existing validated full-scene contract: **EO_ENHANCED**, relative spectral
+hotspots, neutral/mixed temporal evidence, unavailable ground evidence, and
+**GROUND_VERIFICATION_REQUIRED** with **automation_allowed: false**.
+Experimental spectral anomaly ML does not change this decision. These are decision
+support outputs, not drought probabilities, disease diagnoses, crop-failure
+predictions, calibrated confidence or ground truth.
+
+![Compact real-data workflow and separately identified full-scene decision](results/example_output.png)
+
+See [sample provenance and schema](data/sample_input/README.md) and the
+[Submission Stage A verification report](SUBMISSION_STAGE_A_REPORT.md).
+The sample exporter is maintainer-only and requires the original local data;
+evaluators need only the notebook command above. Scientific Stages 1–4.7 and the
+Stage 5C frontend remain unchanged. The full-data workflows below are separate
+from this compact submission route.
+
+Team: **Hadi Alhamesh**, Team Leader — scientific pipeline development,
+Earth-observation processing, system architecture, concept and technical
+implementation. **Hussam Kharof**, UI/UX & Quality Assurance — UI/UX review,
+usability testing, project validation, research and quality assurance.
+
 ## STAGE 1 – Tanager Hyperspectral Pipeline
 
 Processes real Planet Tanager data following the official

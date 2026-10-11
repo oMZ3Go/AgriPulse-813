@@ -25,6 +25,63 @@ class DashboardExportTests(unittest.TestCase):
         self.assertEqual(self.package, exporter.build_package())
         exporter.export(check=True)
 
+    def test_check_accepts_lf_json(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            destination = Path(temporary)
+            exporter.export(destination)
+            for name, expected in self.package.items():
+                if name.endswith(".json"):
+                    self.assertNotIn(b"\r\n", expected)
+                    self.assertEqual((destination / name).read_bytes(), expected)
+            exporter.export(destination, check=True)
+
+    def test_check_accepts_crlf_json_without_rewriting_files(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            destination = Path(temporary)
+            exporter.export(destination)
+            for name, expected in self.package.items():
+                if name.endswith(".json"):
+                    (destination / name).write_bytes(expected.replace(b"\n", b"\r\n"))
+            before = {name: (destination / name).read_bytes() for name in self.package}
+            exporter.export(destination, check=True)
+            self.assertEqual(before, {name: (destination / name).read_bytes() for name in self.package})
+
+    def test_check_rejects_json_changes_other_than_crlf(self):
+        original = self.package["contract.json"]
+        mutations = {
+            "decision": original.replace(b"GROUND_VERIFICATION_REQUIRED", b"MONITOR"),
+            "extra_space": original.replace(b'  "analysis_level"', b'   "analysis_level"'),
+            "bare_carriage_return": original.replace(b"\n", b"\r"),
+        }
+        with tempfile.TemporaryDirectory() as temporary:
+            destination = Path(temporary)
+            exporter.export(destination)
+            for label, modified in mutations.items():
+                for transport in ("LF", "CRLF"):
+                    with self.subTest(change=label, transport=transport):
+                        actual = modified if transport == "LF" else modified.replace(b"\n", b"\r\n")
+                        self.assertNotEqual(actual, original)
+                        (destination / "contract.json").write_bytes(actual)
+                        with self.assertRaisesRegex(ValueError, r"Stale or missing export: contract\.json"):
+                            exporter.export(destination, check=True)
+
+    def test_check_rejects_modified_png_including_newline_bytes(self):
+        name = "figures/moisture_stress_risk.png"
+        original = self.package[name]
+        mutations = {
+            "changed_byte": original[:-1] + bytes([original[-1] ^ 1]),
+            "normalized_binary_newlines": original.replace(b"\r\n", b"\n"),
+        }
+        with tempfile.TemporaryDirectory() as temporary:
+            destination = Path(temporary)
+            exporter.export(destination)
+            for label, modified in mutations.items():
+                with self.subTest(change=label):
+                    self.assertNotEqual(modified, original)
+                    (destination / name).write_bytes(modified)
+                    with self.assertRaisesRegex(ValueError, "Stale or missing export: figures/moisture_stress_risk"):
+                        exporter.export(destination, check=True)
+
     def test_contract_and_decision_are_unchanged(self):
         self.assertEqual(self.document("contract"), json.loads((ROOT / "examples/product_contract_konya.json").read_text()))
         self.assertEqual(self.document("fusion"), json.loads((ROOT / "outputs/fusion/decision.json").read_text()))

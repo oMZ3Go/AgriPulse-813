@@ -18,6 +18,7 @@ outputs/
 *.tiff
 # Compressed satellite window/evidence arrays, including custom cache locations.
 *.npz
+!data/sample_input/tanager_sample.npz
 *.part
 *.tmp
 *.log

@@ -130,7 +130,14 @@ def export(destination=DESTINATION, *, check=False):
     package = build_package()
     if check:
         for name, data in package.items():
-            require((destination / name).is_file() and (destination / name).read_bytes() == data, f"Stale or missing export: {name}")
+            path = destination / name
+            require(path.is_file(), f"Stale or missing export: {name}")
+            actual = path.read_bytes()
+            if name.endswith(".json"):
+                # Git may transport text as CRLF on Windows; retain every other byte.
+                actual = actual.replace(b"\r\n", b"\n")
+                data = data.replace(b"\r\n", b"\n")
+            require(actual == data, f"Stale or missing export: {name}")
         require({str(p.relative_to(destination)).replace('\\', '/') for p in destination.rglob('*') if p.is_file()} == set(package), "Unexpected public package files")
     else:
         for name, data in package.items():

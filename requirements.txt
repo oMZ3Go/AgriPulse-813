@@ -14,3 +14,11 @@ threadpoolctl==3.6.0
 joblib==1.6.0
 narwhals==2.26.0
 cloudpickle==3.1.2
+
+# Submission notebook execution and rendering; existing scientific pins unchanged.
+nbformat==5.11.1
+nbclient==0.11.0
+nbconvert==7.17.1
+ipykernel==7.4.0
+ipython==9.17.1
+jupyter-client==8.10.0
