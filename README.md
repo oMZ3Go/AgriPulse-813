@@ -240,20 +240,51 @@ observations in representative hotspot and comparison areas.
 
 ### Validation
 
-The validated Stage A checkpoint has **146/146 Python tests**, **51/51 frontend
-end-to-end tests**, TypeScript typechecking, a Next.js production build and
-fresh-kernel offline notebook execution passing. These checks establish software
-behavior and reproducibility, not diagnostic accuracy. See the [Python regression
-tests](tests/), [submission reproducibility tests](tests/test_submission.py) and
-[dashboard verification commands](dashboard/README.md#verification).
+#### Reviewer / clean-clone verification
 
-The full Python regression suite requires the maintainer's existing real raw data
-and full-scene outputs. It is not a prerequisite for the compact reviewer path:
+From the repository root, use the environment described in Installation. For the
+submission tests, install the pinned test dependencies once:
 
 ```powershell
 .\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
+```
+
+Then run the recommended reviewer verification commands:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\execute_submission_notebook.py
+.\.venv\Scripts\python.exe -m pytest tests\test_submission.py -q
+```
+
+Expected clean-clone results, independently verified on Python 3.14.0:
+
+- **Notebook execution: PASS**, with a fresh kernel and all 26 cells / 10 code
+  cells executed.
+- **Submission tests: 11 passed, 2 skipped.** The two skipped checks are
+  maintainer-only source-mask and full-package provenance checks requiring local
+  full-scene artifacts that are intentionally excluded from the compact submission.
+- No raw Tanager HDF5, local full-scene outputs or GPU is required. Notebook
+  execution requires no external network after dependencies are installed.
+
+#### Maintainer full-regression suite
+
+```powershell
 .\.venv\Scripts\python.exe -m pytest
 ```
+
+This full suite requires the maintainer's existing real raw data, full-scene
+artifacts under `outputs/` and original pipeline state. It is **not part of the
+compact reviewer submission path** and is not expected to pass in a clean clone
+without those intentionally excluded inputs.
+
+The validated development environment historically passed **146/146 Python
+tests** and **51/51 frontend end-to-end tests**, along with TypeScript typechecking,
+a Next.js production build and fresh-kernel offline notebook execution.
+**146/146 is historical development verification, not the expected clean-clone
+result.** These checks establish software behavior and reproducibility, not
+diagnostic accuracy. See the [Python regression tests](tests/),
+[submission reproducibility tests](tests/test_submission.py) and
+[dashboard verification commands](dashboard/README.md#verification).
 
 ### Limitations
 
