@@ -69,7 +69,7 @@ test("country partial search supports keyboard, Escape and synchronized globe fo
   await input.press("Escape");
   await select(page, "Türk", "Turkey");
   await expect(page.locator(".globe-canvas")).toHaveAttribute("data-focused-country", "792");
-  await expect(page.getByRole("link", { name: "Open validated demo", exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Use validated Konya area", exact: true })).toBeVisible();
   await page.screenshot({ path: "test-results/scene-desktop.png", fullPage: true });
   await page.reload();
   await expect(input).toHaveValue("Turkey");
@@ -81,6 +81,8 @@ test("actual globe polygon picking and regional markers update country search", 
   const canvas = page.locator("canvas");
   const box = await canvas.boundingBox();
   expect(box).not.toBeNull();
+  await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2);
+  await expect(page.locator(".globe-canvas")).toHaveAttribute("data-hover-country", /\d+/);
   await page.mouse.click(box!.x + box!.width / 2, box!.y + box!.height / 2);
   await expect(page.getByRole("combobox", { name: "Find a country" })).not.toHaveValue("");
   await expect(page.getByRole("region", { name: "Area selection" })).toBeVisible();
@@ -107,8 +109,8 @@ test("non-demo country selection performs no fabricated analysis or data fetch",
   await expect(page.locator(".analysis-activity")).toHaveCount(0);
   await expect(page.locator(".assessment-card")).toHaveCount(0);
   await expect(page.getByText("GROUND_VERIFICATION_REQUIRED", { exact: true })).toHaveCount(0);
-  await page.getByText("Area selection options · upcoming").click();
-  await expect(page.getByText("Drawing and live analysis are not connected yet.", { exact: false })).toBeVisible();
+  await expect(page.getByRole("img", { name: "AOI map", exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Use this area", exact: true })).toBeDisabled();
   expect(scientificRequests).toEqual([]);
   await page.getByRole("link", { name: "Open validated Konya demo" }).click();
   await ready(page);
@@ -143,7 +145,7 @@ for (const useCase of ["EXPLORE_EARTH", "VERIFY_MY_FIELD", "SMART_FARM"]) {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Trace the evidence.");
     await expect(page).toHaveURL(new RegExp("useCase=" + useCase));
     if (useCase === "VERIFY_MY_FIELD") {
-      await expect(page.getByRole("region", { name: "Field verification pathway" })).toContainText("Ground Observation unavailable");
+      await expect(page.getByRole("region", { name: "Field verification pathway" })).toContainText("Capture what you observed on site.");
       await expect(page.getByRole("region", { name: "Field verification pathway" })).toContainText("not automatically verified ground truth");
     }
     if (useCase === "SMART_FARM") await expect(page.getByRole("region", { name: "Smart Farm pathway" })).toContainText("IoT not connected");
@@ -238,7 +240,7 @@ test("reduced motion and unavailable WebGL retain usable country and demo flows"
   await select(page, "Syr", "Syria");
   await expect(page.getByRole("region", { name: "Area selection" })).toContainText("target deployment");
   await select(page, "Tur", "Turkey");
-  await page.getByRole("link", { name: "Open validated demo", exact: true }).click();
+  await page.getByRole("link", { name: "Use validated Konya area", exact: true }).click();
   await ready(page);
 });
 

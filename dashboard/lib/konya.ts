@@ -36,9 +36,13 @@ export async function loadKonya(signal: AbortSignal, complete: (count: number) =
     const result = await fetch("/data/konya/" + record.path, { signal, cache: "no-cache" });
     if (!result.ok) throw new Error(`Local ${key} evidence is unavailable.`);
     const buffer = await result.arrayBuffer();
-    const hash = Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", buffer))).map((byte) => byte.toString(16).padStart(2, "0")).join("");
-    if (hash !== record.sha256) throw new Error(`Local ${key} evidence differs from its export. Regenerate the package.`);
-    return JSON.parse(new TextDecoder().decode(buffer));
+    const digest = async (bytes: ArrayBuffer | Uint8Array<ArrayBuffer>) => Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", bytes))).map((byte) => byte.toString(16).padStart(2, "0")).join("");
+    const text = new TextDecoder().decode(buffer);
+    const hash = await digest(buffer);
+    // Git on Windows can check out the tracked LF JSON as CRLF. Accept only that
+    // transport difference; all other bytes must still match the exported hash.
+    if (hash !== record.sha256 && (!text.includes("\r\n") || await digest(new TextEncoder().encode(text.replaceAll("\r\n", "\n"))) !== record.sha256)) throw new Error(`Local ${key} evidence differs from its export. Regenerate the package.`);
+    return JSON.parse(text);
   }
   const contract = await read("contract");
   if (contract.schema_version !== "4.7.1" || contract.decision_state !== "GROUND_VERIFICATION_REQUIRED" || contract.automation_allowed !== false || contract.analysis_level !== "EO_ENHANCED" || contract.aoi.aoi_id !== "konya-20250608_091605_90_4001") throw new Error("The Konya contract does not match this validated demo.");

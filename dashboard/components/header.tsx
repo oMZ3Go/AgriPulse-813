@@ -1,16 +1,18 @@
+"use client";
+import { LanguageSwitcher, useLanguage } from "./language-provider";
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
+import { MapPinned } from "lucide-react";
 import { Brand } from "@/components/brand";
 
 export function Header({ scene = false }: { scene?: boolean }) {
+  const { t } = useLanguage();
   return (
     <header className="site-header">
       <Brand />
-      <nav aria-label="Main navigation" className="header-nav">
-        <Link className={scene ? "nav-link active" : "nav-link"} href="/scene" aria-current={scene ? "page" : undefined}>Explore Earth</Link>
-        <span className="header-divider" />
-        <span className="team-credit">Beyond The Limit <ArrowUpRight size={13} aria-hidden="true" /></span>
-      </nav>
+      <span className="header-context">{t(scene ? "Area selection" : "Beyond The Limit")}</span>
+      <nav aria-label={t("Main navigation")} className="header-nav">
+        <Link className={scene ? "nav-link active" : "nav-link"} href="#country-selection" aria-current={scene ? "page" : undefined}><MapPinned size={15} />{t("Explore Earth")}</Link>
+      <LanguageSwitcher /></nav>
     </header>
   );
 }

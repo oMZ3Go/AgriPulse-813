@@ -888,3 +888,21 @@ Run locally using the commands above (`cd dashboard`, `npm.cmd ci`,
 backend, weather integration, sensor ingestion, Ground Observation persistence,
 supervised learning or intervention automation. No Stage 5C work or deployment
 is included.
+
+
+## Stage 5C - Frontend product polish, AOI and Ground Observation
+
+Stage 5C adds a guided country-to-AOI flow, a local 2D bounding-box map with
+keyboard coordinate entry, and use-case-specific continuation. The validated
+Konya shortcut retains the existing scene, decision and evidence package.
+Custom AOIs explicitly show that live EO processing has not been performed.
+
+Verify My Field now provides a validated, local Ground Observation form and
+JSON draft export. Reports remain SELF_REPORTED and do not update the saved
+assessment. No backend, database, cloud persistence or scientific processing
+is added. Simple View emphasizes the next action; sticky navigation, bounded
+globe zoom and EN/AR controls with RTL support improve the existing interface.
+
+See the [Stage 5C report](dashboard/STAGE_5C_REPORT.md) and
+[local run guide](dashboard/README.md). Stages 1–4.7 remain scientifically
+unchanged. This stage does not include deployment, a commit or a push.

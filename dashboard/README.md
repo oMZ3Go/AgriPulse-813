@@ -1,4 +1,4 @@
-# AgriPulse-813 · Stage 5B
+# AgriPulse-813 · Stage 5C
 
 A local Earth-observation product by **Beyond The Limit**, evolving the Stage 5A
 Next.js / React / TypeScript shell. The original dark palette, Geist fonts,
@@ -15,7 +15,8 @@ npm.cmd run dev
 ```
 
 Open **http://127.0.0.1:3000**. The included data package and geography work
-without external APIs. Dependency installation still requires the usual package
+without external APIs. Detailed AOI street tiles need an internet connection;
+they are geographic context only. Dependency installation requires package
 registry access. Use `npm` instead of `npm.cmd` on macOS/Linux.
 
 For production preview, stop the development server first:
@@ -30,9 +31,10 @@ npm.cmd start
 - **Explore Earth** (`EXPLORE_EARTH`): select a country, prepare an agricultural
   area of interest, or open the existing validated Konya scene.
 - **Verify My Field** (`VERIFY_MY_FIELD`): the same real EO assessment, followed
-  by an honest field-verification pathway. Future Ground Observation includes
-  crop/soil condition, irrigation context, symptoms, notes, location, timestamp
-  and an optional photo. No form, submission or persistence is implemented.
+  by a local Ground Observation form. Crop/soil condition, irrigation context,
+  symptoms, notes, an actual point inside the AOI, UTC timestamp and optional
+  photo reference are validated. A SELF_REPORTED summary can be exported as JSON.
+  No remote submission or persistent storage is implemented.
 - **Smart Farm** (`SMART_FARM`): the same EO assessment with a future sensor
   connection pathway. **IoT not connected**; no invented readings. Soil moisture,
   air temperature, humidity, optional soil temperature and calibration metadata
@@ -43,7 +45,9 @@ Simple presents concise guidance without raw metrics. Expert exposes Overview,
 Spatial risk, Temporal evidence, Hyperspectral analysis, ML spectral anomaly,
 Decision fusion, Data provenance and Methodology / limitations.
 
-Use case, mode, country and Expert section are encoded in URL parameters.
+Use case, mode, country, confirmed custom BBOX and Expert section are encoded
+in URL parameters. Language preference uses optional browser localStorage;
+observations stay in page memory only. EN/AR controls set document lang and dir.
 Switching use case does not change evidence richness or the decision; switching
 presentation preserves the use case. All three use cases can open either view.
 
@@ -54,6 +58,8 @@ presentation preserves the use case. All three use cases can open either view.
 - `/scene`: product choice, presentation depth, geographic selection and AOI
   preparation.
 - `/dashboard`: the validated Konya package in Simple or Expert presentation.
+  Confirmed custom areas carry `aoi=custom`, `country` and `bbox` parameters and
+  never load Konya results. Invalid geometry links show an error, not a fallback.
 
 Country search uses the same local IDs as the globe polygons. Partial,
 case-insensitive and accent-insensitive search includes a Türkiye alias for
@@ -69,7 +75,8 @@ not also pick the polygon beneath them.
 The local Natural Earth 1:110m dataset contains 177 mapped countries/areas.
 Small countries and territories may be omitted at this scale; geography is not
 a political assertion. Focus is calculated deterministically on the largest
-polygon. No runtime geography requests leave this application. Regenerate with:
+polygon. Globe geography stays local. Only the detailed AOI basemap requests
+online tiles. Regenerate local globe assets with:
 
 ```powershell
 npm.cmd run globe:assets
@@ -77,8 +84,16 @@ npm.cmd run globe:assets
 
 **Global location selection does not imply validated analysis for every
 location.** A selected country is geographic context, not an analysed AOI.
-Point, bounding-box and polygon selection are described as upcoming options;
-drawing and global EO processing are not connected. Other locations never show
+A Web Mercator map uses local Natural Earth outlines for country overview and
+OpenStreetMap street tiles from zoom level 8. Roads and settlements provide
+geographic context only, never scientific EO evidence. Visible attribution links
+to OpenStreetMap contributors; no key is required. The browser requests only
+visible tiles and honors HTTP caching; there is no prefetch or offline download.
+If tiles fail, an explicit status preserves the local outline, manual coordinates
+and AOI interaction. BBOX drawing, pan, button/keyboard zoom, fit-to-selection,
+manual coordinate entry, clear/redraw and confirmation are supported.
+See [the OSM tile policy](https://operations.osmfoundation.org/policies/tiles/). Polygon drawing remains
+disabled; global EO processing is not connected. Other locations never show
 fabricated availability, completed processing or results. Konya is the only local
 validated scientific package.
 
@@ -104,7 +119,9 @@ artifacts are read, never modified; no processing or scientific inference runs.
 
 The manifest contains hashes for the JSON payloads and original figures.
 The client checks JSON SHA-256 values and essential schema/decision invariants
-before exposing any assessment. A missing, stale or inconsistent package shows
+before exposing any assessment. Hash checks accept the exact exported LF bytes
+or their CRLF checkout equivalent on Windows; no other normalization is allowed.
+A missing, stale or inconsistent package shows
 an error with retry, without displaying a partial assessment. Hashes detect
 inconsistency; they do not establish source authenticity. Browser types are
 derived from the generated JSON through type-only imports. TypeScript does not
@@ -209,10 +226,49 @@ rejection of incompatible or stale inputs.
 
 ## Scope boundary
 
-Stage 5B adds no backend, database, user accounts, weather API, IoT ingestion,
+Stage 5C adds no backend, database, user accounts, weather API, IoT ingestion,
 Ground Observation persistence, supervised ML, automatic irrigation, cloud
-deployment or global Sentinel pipeline. Full AOI drawing and later product
-polishing remain future work. Stages 1–4.7 remain unchanged.
+deployment or global Sentinel pipeline. Point/polygon AOIs, satellite basemaps
+and observation assimilation remain future work. Stages 1–4.7 remain unchanged.
 
 See [the Stage 5B delivery report](STAGE_5B_REPORT.md) for the change inventory,
 verification results and review notes.
+
+## Stage 5C review
+
+The guided flow is use case, Simple/Expert, country, AOI, confirmation, then
+workspace. Landing country clicks only browse; the icon-bearing **Choose an
+area** CTA starts the workflow. Numbered steps support keyboard focus and
+prerequisite explanations. **Use this area** validates and confirms either drawn
+or manually entered coordinates in one action. Turkey offers **Use validated Konya area**, using the exact geometry
+from the unchanged contract. Custom AOIs remain explicitly unprocessed.
+
+Simple View highlights the next action, intervention restriction and diagnostic
+limitations with green/teal controls; Expert consistently uses restrained blue
+controls, evidence cards, tables and figure framing. Use case and Simple/Expert
+controls stay sticky below the header.
+Desktop navigation separates site context from evidence links; mobile navigation
+uses a compact horizontal rail in normal document flow. Globe marker wrappers
+keep camera projection transforms separate from button transitions. The globe supports button/wheel zoom with
+altitude bounded to 0.95–3 globe radii above the surface. Close zoom widens the
+camera framing to preserve edge clearance. Landing idle rotation is slow, pauses
+during interaction or country focus, and respects reduced motion. Draw, Pan,
+Clear, zoom, fit and reset share a compact map toolbar. Valid coordinate edits
+immediately update the BBOX and metadata.
+
+Ground Observation requires crop, role, plant/soil condition, irrigation state,
+actual point inside the selected BBOX and a valid nonfuture UTC time. The optional
+AOI-center helper is explicitly a convenience, never a GPS reading. Suggested
+coordinates remain editable and require an explicit location check before capture. Optional
+irrigation time cannot follow the observation. Optional photo references are
+text only. Local drafts do not update the saved assessment or evidence level;
+they have not been matched to its historical cutoff. Export before leaving or
+reloading. JSON is a draft envelope, not a full Stage 4.7 AssessmentResult.
+
+Arabic translates the core product, forms, errors, activity, status, availability
+and main scientific cautions. Directional controls and layout adapt to RTL;
+coordinates, scientific codes and original figures remain readable/unmirrored.
+Advanced artifact prose, figure labels and some country names remain English.
+
+See [the Stage 5C delivery report](STAGE_5C_REPORT.md) for exact changes, test
+results, limitations and manual review commands. No commit, push or deployment.

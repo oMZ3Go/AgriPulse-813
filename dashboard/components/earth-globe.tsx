@@ -1,11 +1,12 @@
 "use client";
+import { useLanguage } from "./language-provider";
 
 import dynamic from "next/dynamic";
 import { Component, useEffect, useState } from "react";
 import { Globe2 } from "lucide-react";
 import type { Country } from "@/lib/scenes";
 
-export type EarthGlobeProps = { selected: Country | null; onSelect: (country: Country) => void };
+export type EarthGlobeProps = { selected: Country | null; onSelect: (country: Country) => void; idleRotation?: boolean };
 
 const GlobeCanvas = dynamic(() => import("./globe-canvas"), {
   ssr: false,
@@ -13,7 +14,8 @@ const GlobeCanvas = dynamic(() => import("./globe-canvas"), {
 });
 
 function GlobePlaceholder({ unavailable = false }: { unavailable?: boolean }) {
-  return <div className="globe-placeholder" role="status"><div className="globe-outline"><Globe2 size={64} strokeWidth={0.6} /></div><p>{unavailable ? "Earth view unavailable on this device" : "Preparing the Earth view"}</p><span>{unavailable ? "Use country search to continue." : "Local geography · no external map service"}</span></div>;
+  const { t } = useLanguage();
+  return <div className="globe-placeholder" role="status"><div className="globe-outline"><Globe2 size={64} strokeWidth={0.6} /></div><p>{t(unavailable ? "Earth view unavailable on this device" : "Preparing the Earth view")}</p><span>{t(unavailable ? "Use country search to continue." : "Local geography · no external map service")}</span></div>;
 }
 
 class GlobeBoundary extends Component<{ children: React.ReactNode }, { failed: boolean }> {

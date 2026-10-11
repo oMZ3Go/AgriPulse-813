@@ -1,6 +1,8 @@
 import countryData from "./countries.json";
 export type Country = (typeof countryData)[number];
-export const countries: Country[] = countryData;
+// Interaction policy uses the dataset's ISO 3166-1 numeric code. Geography stays intact.
+export const isSelectableCountry = (id: string | null) => id !== null && id !== "376";
+export const countries: Country[] = countryData.filter((country) => isSelectableCountry(country.id));
 export const countryById = (id: string | null) => countries.find((country) => country.id === id) ?? null;
 // Regional locators are separate from the validated package's actual AOI.
 export const locations = [
